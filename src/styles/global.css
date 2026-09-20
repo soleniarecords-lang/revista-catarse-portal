@@ -1,0 +1,599 @@
+/* Visual da Revista Catarse: tema claro e escuro, gradientes verdes granulados, sem vermelho.
+   Referências: The Dissolve (faixa de navegação, granulado, linhas finas), Avaunt (tipografia grande e
+   espaçada, respiro) e a Substack da revista (Playfair Display, verde-azulado #0d9488). */
+
+/* ---------- tokens ---------- */
+:root {
+	color-scheme: light;
+	--bg: #fbfcfb;
+	--bg-2: #f1f7f3;
+	--elevado: #ffffff;
+	--tinta: #0e1512;
+	--mute: #55625b;
+	--mute-2: #7b8983;
+	--linha: #dbe5df;
+	--acento: #0d9488; /* verde-azulado da Substack */
+	--acento-texto: #0b7d72; /* versão mais escura para texto e links sobre claro */
+	--botao: #0d9488;
+	--botao-hover: #0b7d72;
+	--botao-texto: #ffffff;
+
+	/* gradientes granulados */
+	/* claro: tons de verde quase brancos; o granulado é só uma textura leve por cima */
+	--halo-1: rgba(190, 236, 214, 0.5);
+	--halo-2: rgba(226, 246, 236, 0.85);
+	--capa-base: #fcfdfc;
+	--capa-f1: 20%;
+	--capa-f2: 11%;
+	--capa-mistura: white;
+	--grao-img: url('/grao-claro.png');
+
+	--raio: 14px;
+	--largura: 1180px;
+	--leitura: 690px;
+	--f-titulo: var(--font-titulo), 'Playfair Display', Georgia, serif;
+	--f-corpo: var(--font-corpo), 'Libre Baskerville', Georgia, serif;
+	--f-ui: var(--font-ui), 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+:root[data-tema='escuro'] {
+	color-scheme: dark;
+	--bg: #050706;
+	--bg-2: #0a0f0d;
+	--elevado: #0c1210;
+	--tinta: #eef5f1;
+	--mute: #a3b3ab;
+	--mute-2: #73847b;
+	--linha: #1a2420;
+	--acento-texto: #3ac7b6;
+	--halo-1: rgba(13, 148, 136, 0.26);
+	--halo-2: rgba(130, 225, 195, 0.09);
+	--capa-base: #070a09;
+	--capa-f1: 40%;
+	--capa-f2: 22%;
+	--capa-mistura: black;
+	--grao-img: url('/grao-escuro.png');
+}
+
+/* sem JavaScript: segue o tema do sistema */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-tema]) {
+		color-scheme: dark;
+		--bg: #050706;
+		--bg-2: #0a0f0d;
+		--elevado: #0c1210;
+		--tinta: #eef5f1;
+		--mute: #a3b3ab;
+		--mute-2: #73847b;
+		--linha: #1a2420;
+		--acento-texto: #3ac7b6;
+		--halo-1: rgba(13, 148, 136, 0.26);
+		--halo-2: rgba(130, 225, 195, 0.09);
+		--capa-base: #070a09;
+		--capa-f1: 40%;
+		--capa-f2: 22%;
+		--capa-mistura: black;
+		--grao-img: url('/grao-escuro.png');
+	}
+}
+
+/* ---------- base ---------- */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	background: var(--bg);
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	position: relative;
+	isolation: isolate;
+	margin: 0;
+	background: var(--bg);
+	color: var(--tinta);
+	font-family: var(--f-ui);
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	transition: background-color 0.25s, color 0.25s;
+}
+
+/* atmosfera: gradiente verde granulado no topo de todas as páginas */
+body::before {
+	content: '';
+	position: absolute;
+	inset: 0 0 auto 0;
+	height: 680px;
+	z-index: -1;
+	pointer-events: none;
+	/* a primeira camada apaga tudo em direção à cor do fundo (no lugar de uma máscara, que é mais cara) */
+	background:
+		linear-gradient(to bottom, transparent 45%, var(--bg) 100%),
+		var(--grao-img),
+		radial-gradient(55% 75% at 10% 0%, var(--halo-1), transparent 70%),
+		radial-gradient(45% 65% at 92% 6%, var(--halo-2), transparent 70%),
+		radial-gradient(40% 50% at 55% 28%, var(--halo-2), transparent 75%);
+	background-size: auto, 220px 220px, auto, auto, auto;
+}
+
+img {
+	display: block;
+	max-width: 100%;
+}
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.wrap {
+	width: 100%;
+	max-width: var(--largura);
+	margin: 0 auto;
+	padding: 0 24px;
+}
+
+:focus-visible {
+	outline: 2px solid var(--acento);
+	outline-offset: 3px;
+	border-radius: 4px;
+}
+
+/* ---------- peças pequenas ---------- */
+.meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 9px;
+	font-family: var(--f-ui);
+	font-size: 11.5px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--mute);
+}
+.meta .pt {
+	color: var(--mute-2);
+}
+.marca {
+	display: inline-block;
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	flex: none;
+}
+.selo {
+	font-size: 10.5px;
+	letter-spacing: 0.08em;
+	padding: 2px 8px;
+	border-radius: 999px;
+	border: 1px solid var(--acento-texto);
+	color: var(--acento-texto);
+}
+.selo.pend {
+	border-style: dashed;
+	color: var(--tinta);
+	border-color: var(--mute);
+}
+.selo.pod {
+	background: var(--acento);
+	border-color: var(--acento);
+	color: #fff;
+}
+
+.botao {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px 20px;
+	border-radius: 999px;
+	background: var(--botao);
+	color: var(--botao-texto);
+	font-family: var(--f-ui);
+	font-weight: 600;
+	font-size: 14px;
+	letter-spacing: 0.02em;
+	border: 0;
+	cursor: pointer;
+	transition: background 0.15s;
+}
+.botao:hover {
+	background: var(--botao-hover);
+}
+
+/* rótulo de seção, como as faixas do The Dissolve */
+.titulo-secao {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	margin: 72px 0 26px;
+	font-family: var(--f-ui);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--tinta);
+}
+.titulo-secao::after {
+	content: '';
+	flex: 1;
+	height: 1px;
+	background: var(--linha);
+}
+
+
+/* ---------- destaque ---------- */
+.topo-home {
+	display: grid;
+	grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+	gap: 32px;
+	margin-top: 32px;
+	align-items: stretch;
+}
+.topo-home.sozinho {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.heroi {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	min-height: 560px;
+	border-radius: var(--raio);
+	overflow: hidden;
+	background: var(--capa-base);
+	border: 1px solid var(--linha);
+	isolation: isolate;
+}
+.heroi > .capa {
+	position: absolute;
+	inset: 0;
+	z-index: -2;
+}
+.heroi img.capa {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.heroi .texto {
+	position: relative;
+	z-index: 1;
+	padding: 40px 44px 44px;
+	max-width: 900px;
+}
+.heroi h2 {
+	margin: 16px 0 14px;
+	font-family: var(--f-titulo);
+	font-weight: 800;
+	font-size: clamp(32px, 4.6vw, 58px);
+	line-height: 1.06;
+	letter-spacing: -0.015em;
+}
+.heroi p {
+	margin: 0 0 26px;
+	font-family: var(--f-corpo);
+	font-size: clamp(16px, 1.5vw, 18.5px);
+	line-height: 1.55;
+	color: var(--mute);
+	max-width: 60ch;
+}
+/* com foto: texto claro sobre véu escuro, nos dois temas */
+.heroi.com-imagem::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	/* véu de baixo para cima + véu do lado esquerdo: o texto fica legível e o rosto do fotografado, à direita, livre */
+	background:
+		linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.35) 45%, rgba(0, 0, 0, 0) 75%),
+		linear-gradient(to right, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 62%);
+}
+.heroi.com-imagem .texto,
+.heroi.com-imagem h2 {
+	color: #fff;
+}
+.heroi.com-imagem p,
+.heroi.com-imagem .meta {
+	color: #e6efe9;
+}
+
+.leia {
+	display: inline-flex;
+	align-items: center;
+	gap: 14px;
+	font-family: var(--f-ui);
+	font-size: 11.5px;
+	font-weight: 700;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+}
+.leia .seta {
+	display: grid;
+	place-items: center;
+	width: 46px;
+	height: 46px;
+	border-radius: 50%;
+	background: var(--acento);
+	color: #fff;
+	font-size: 20px;
+	transition: transform 0.15s;
+}
+.heroi:hover .seta,
+.card:hover .seta {
+	transform: translateX(4px);
+}
+
+.lateral {
+	display: flex;
+	flex-direction: column;
+	padding: 22px 26px 18px;
+	border: 1px solid var(--linha);
+	border-radius: var(--raio);
+	background: color-mix(in srgb, var(--elevado) 88%, transparent);
+}
+.rotulo {
+	margin: 0 0 4px;
+	font-family: var(--f-ui);
+	font-size: 11.5px;
+	font-weight: 700;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--acento-texto);
+}
+.lateral .todos {
+	margin-top: auto;
+	padding-top: 18px;
+	font-family: var(--f-ui);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--acento-texto);
+}
+.lateral .todos:hover {
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+
+/* ---------- grade de cartões ---------- */
+.grade {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 44px 30px;
+}
+.card {
+	display: block;
+	/* não desenha cartões fora da tela até rolar até eles (a página tem dezenas de capas com gradiente) */
+	content-visibility: auto;
+	contain-intrinsic-block-size: auto 470px; /* só a altura; um valor único também fixaria a largura */
+}
+.card .miniatura {
+	position: relative;
+	aspect-ratio: 4 / 3;
+	border-radius: 12px;
+	overflow: hidden;
+	background: var(--capa-base);
+	border: 1px solid var(--linha);
+	margin-bottom: 16px;
+}
+.card .miniatura img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.35s;
+}
+.card:hover .miniatura img {
+	transform: scale(1.03);
+}
+.card h3 {
+	margin: 0 0 8px;
+	font-family: var(--f-titulo);
+	font-weight: 700;
+	font-size: 23px;
+	line-height: 1.18;
+	letter-spacing: -0.005em;
+}
+.card:hover h3 {
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 4px;
+}
+.card p {
+	margin: 0 0 12px;
+	color: var(--mute);
+	font-family: var(--f-corpo);
+	font-size: 14.5px;
+	line-height: 1.55;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+@media (max-width: 1020px) {
+	.topo-home {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.heroi {
+		min-height: 480px;
+	}
+	.grade {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 640px) {
+	.wrap {
+		padding: 0 18px;
+	}
+	.grade {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 38px;
+	}
+	.heroi {
+		min-height: 440px;
+	}
+	.heroi .texto {
+		padding: 26px 24px 28px;
+	}
+	.titulo-secao {
+		margin-top: 56px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	* {
+		transition: none !important;
+	}
+}
+
+/* ---------- matéria ---------- */
+.artigo {
+	max-width: var(--leitura);
+	margin: 0 auto;
+	padding: 56px 24px 20px;
+}
+.artigo h1 {
+	margin: 18px 0 16px;
+	font-family: var(--f-titulo);
+	font-weight: 800;
+	font-size: clamp(34px, 5.2vw, 54px);
+	line-height: 1.07;
+	letter-spacing: -0.015em;
+}
+.artigo .sub {
+	margin: 0 0 22px;
+	font-family: var(--f-corpo);
+	font-size: 20px;
+	line-height: 1.5;
+	color: var(--mute);
+}
+.artigo .capa-fig {
+	margin: 32px 0 0;
+}
+.artigo .capa-fig .capa,
+.artigo .capa-fig img {
+	border-radius: 12px;
+	aspect-ratio: 16 / 9;
+	width: 100%;
+	object-fit: cover;
+	border: 1px solid var(--linha);
+}
+.artigo figcaption {
+	margin-top: 8px;
+	font-size: 12.5px;
+	color: var(--mute-2);
+}
+.prosa {
+	margin-top: 40px;
+	font-family: var(--f-corpo);
+	font-size: 18px;
+	line-height: 1.82;
+	color: color-mix(in srgb, var(--tinta) 92%, transparent);
+}
+.prosa p {
+	margin: 0 0 1.4em;
+}
+.prosa h2,
+.prosa h3 {
+	font-family: var(--f-titulo);
+	line-height: 1.25;
+	margin: 1.9em 0 0.6em;
+	color: var(--tinta);
+}
+.prosa ul,
+.prosa ol {
+	padding-left: 1.3em;
+	margin: 0 0 1.4em;
+}
+.prosa li {
+	margin-bottom: 0.4em;
+}
+.prosa blockquote {
+	margin: 1.6em 0;
+	padding-left: 1.2em;
+	border-left: 3px solid var(--acento);
+	color: var(--mute);
+	font-style: italic;
+}
+.prosa hr {
+	border: 0;
+	border-top: 1px solid var(--linha);
+	margin: 2em 0;
+}
+.prosa a {
+	color: var(--acento-texto);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.prosa table {
+	width: 100%;
+	border-collapse: collapse;
+	font-family: var(--f-ui);
+	font-size: 15px;
+	margin: 0 0 1.4em;
+}
+.prosa th,
+.prosa td {
+	border-bottom: 1px solid var(--linha);
+	padding: 8px 10px;
+	text-align: left;
+}
+
+/* avisos que só aparecem no npm run dev */
+.aviso-rascunho {
+	margin: 24px 0 0;
+	padding: 12px 16px;
+	border: 1px solid var(--acento-texto);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--acento) 8%, transparent);
+	color: var(--tinta);
+	font-family: var(--f-ui);
+	font-size: 14px;
+}
+.aviso-rascunho.pend {
+	border-style: dashed;
+	border-color: var(--mute);
+	background: transparent;
+}
+
+/* ---------- página de quadro / autor / listas ---------- */
+.cab-quadro {
+	padding: 64px 0 8px;
+}
+.cab-quadro .filete {
+	width: 56px;
+	height: 4px;
+	border-radius: 2px;
+	margin-bottom: 22px;
+}
+.cab-quadro h1 {
+	margin: 0 0 8px;
+	font-family: var(--f-titulo);
+	font-weight: 800;
+	font-size: clamp(38px, 6vw, 68px);
+	line-height: 1.02;
+	letter-spacing: -0.02em;
+}
+.cab-quadro .chamada {
+	margin: 0 0 16px;
+	font-family: var(--f-ui);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--mute);
+}
+.cab-quadro p.desc {
+	margin: 0;
+	max-width: 60ch;
+	font-family: var(--f-corpo);
+	font-size: 18px;
+	line-height: 1.6;
+	color: var(--mute);
+}
+.vazio {
+	color: var(--mute);
+	padding: 40px 0;
+}

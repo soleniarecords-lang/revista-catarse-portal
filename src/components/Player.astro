@@ -1,0 +1,21 @@
+---
+// Player nativo (<audio>). Os MP3 continuam hospedados no Substack; nada é baixado para o portal.
+interface Props {
+	src: string;
+	titulo: string;
+}
+const { src, titulo } = Astro.props;
+---
+
+<audio class="player" controls preload="none" src={src} aria-label={`Ouvir: ${titulo}`}>
+	Seu navegador não toca áudio. <a href={src}>Baixe o episódio</a>.
+</audio>
+
+<style>
+	.player {
+		display: block;
+		width: 100%;
+		height: 54px;
+		border-radius: 999px;
+	}
+</style>

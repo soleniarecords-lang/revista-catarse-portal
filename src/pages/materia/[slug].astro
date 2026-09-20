@@ -1,0 +1,174 @@
+---
+import Base from '../../layouts/Base.astro';
+import Capa from '../../components/Capa.astro';
+import Player from '../../components/Player.astro';
+import InscricaoSubstack from '../../components/InscricaoSubstack.astro';
+import { render } from 'astro:content';
+import { getMaterias, rotuloMeta } from '../../lib/materias';
+import { jsonLdMateria } from '../../lib/seo';
+import { autorPorNome, hrefAutor } from '../../data/autores';
+
+export async function getStaticPaths() {
+	const materias = await getMaterias();
+	return materias.map((m) => ({ params: { slug: m.slug }, props: { m } }));
+}
+
+const { m } = Astro.props;
+const Content = m.entry ? (await render(m.entry)).Content : null;
+const dev = import.meta.env.DEV;
+const autor = autorPorNome(m.autor);
+const texto = m.entry?.body ?? (m.html ?? '').replace(/<[^>]+>/g, ' ');
+const palavras = texto.split(/\s+/).filter(Boolean).length;
+---
+
+<Base
+	titulo={m.titulo}
+	descricao={m.subtitulo}
+	tipo="article"
+	imagem={m.imagem}
+	publicadoEm={m.data}
+	secao={m.quadro.nome}
+	jsonld={jsonLdMateria(m, Astro.site!, palavras)}
+>
+	<article class="artigo">
+		<div class="meta">
+			<i class="marca" style={`background:${m.quadro.cor}`}></i>
+			<a href={`/quadros/${m.quadro.slug}/`}>{m.quadro.nome}</a>
+			<span class="pt">•</span>
+			<span>{rotuloMeta(m)}</span>
+		</div>
+		<h1>{m.titulo}</h1>
+		{m.subtitulo && <p class="sub">{m.subtitulo}</p>}
+		<div class="meta"><span>Por <a class="autor" href={hrefAutor(autor)}>{autor.nome}</a></span></div>
+
+		{
+			dev && !m.aprovado && (
+				<p class="aviso-rascunho">
+					Rascunho: só aparece no <code>npm run dev</code>. Para publicar, marque <code>aprovado: true</code>{' '}
+					{m.origem === 'edicao' ? 'no cabeçalho do texto' : 'em src/data/substack-curadoria.json'}.
+				</p>
+			)
+		}
+		{
+			dev && m.pendencias > 0 && (
+				<p class="aviso-rascunho pend">
+					Este texto ainda tem {m.pendencias} marcador(es) [CONFIRMAR]. O build de produção recusa matéria assim.
+				</p>
+			)
+		}
+
+		{
+			(!m.audio || m.imagem) && (
+				<figure class="capa-fig">
+					<Capa materia={m} />
+					{
+						m.imagem && m.credito && (
+							<figcaption>
+								{m.credito}
+								{m.creditoUrl && (
+									<>
+										{' · '}
+										<a href={m.creditoUrl} rel="noopener" target="_blank">ver original</a>
+									</>
+								)}
+								{m.licencaUrl && (
+									<>
+										{' · '}
+										<a href={m.licencaUrl} rel="noopener license" target="_blank">licença</a>
+									</>
+								)}
+							</figcaption>
+						)
+					}
+				</figure>
+			)
+		}
+		{
+			m.audio && (
+				<div class="player-fig">
+					<Player src={m.audio} titulo={m.titulo} />
+				</div>
+			)
+		}
+
+		<div class="prosa">
+			{Content ? <Content /> : <Fragment set:html={m.html} />}
+		</div>
+
+		{
+			m.fontes && m.fontes.length > 0 && (
+				<aside class="fontes" aria-labelledby="fontes-titulo">
+					<h2 id="fontes-titulo">Fontes</h2>
+					<ul>
+						{m.fontes.map((f) => (
+							<li><a href={f.url} rel="noopener nofollow" target="_blank">{f.nome}</a></li>
+						))}
+					</ul>
+					<p>Texto da redação da Revista Catarse, escrito a partir das fontes acima.</p>
+				</aside>
+			)
+		}
+
+		{
+			m.substackUrl && (
+				<p class="tambem">
+					Também publicado na <a href={m.substackUrl} rel="noopener">Substack da Revista Catarse</a>.
+				</p>
+			)
+		}
+	</article>
+	<div class="wrap"><InscricaoSubstack /></div>
+</Base>
+
+<style>
+	.player-fig {
+		margin-top: 24px;
+	}
+	.tambem {
+		margin: 40px 0 0;
+		padding-top: 20px;
+		border-top: 1px solid var(--linha);
+		font-size: 14px;
+		color: var(--mute);
+	}
+	.fontes {
+		margin-top: 40px;
+		padding: 20px 24px;
+		border: 1px solid var(--linha);
+		border-radius: 12px;
+		background: var(--elevado);
+	}
+	.fontes h2 {
+		margin: 0 0 10px;
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--mute);
+	}
+	.fontes ul {
+		margin: 0 0 12px;
+		padding-left: 1.2em;
+	}
+	.fontes a {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	.fontes p {
+		margin: 0;
+		font-size: 13px;
+		color: var(--mute-2);
+	}
+	.artigo figcaption a {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.autor {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	.tambem a {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+</style>

@@ -1,0 +1,63 @@
+---
+import { hrefMateria, rotuloMeta, type Materia } from '../lib/materias';
+
+interface Props {
+	materia: Materia;
+	compacta?: boolean;
+}
+const { materia: m, compacta = false } = Astro.props;
+const dev = import.meta.env.DEV;
+---
+
+<a class:list={['linha', { compacta }]} href={hrefMateria(m)}>
+	<div class="meta">
+		<i class="marca" style={`background:${m.quadro.cor}`}></i>
+		<span>{m.quadro.nome}</span>
+		<span class="pt">•</span>
+		<span>{rotuloMeta(m)}</span>
+		{dev && !m.aprovado && <span class="selo">rascunho</span>}
+		{dev && m.pendencias > 0 && <span class="selo pend">{m.pendencias} a confirmar</span>}
+	</div>
+	<h3>{m.titulo}</h3>
+	{!compacta && m.subtitulo && <p>{m.subtitulo}</p>}
+</a>
+
+<style>
+	.linha {
+		display: block;
+		padding: 24px 0;
+		border-bottom: 1px solid var(--linha);
+	}
+	.linha:last-of-type {
+		border-bottom: 0;
+	}
+	.linha h3 {
+		margin: 10px 0 8px;
+		font-family: var(--f-titulo);
+		font-weight: 700;
+		font-size: 26px;
+		line-height: 1.18;
+		letter-spacing: -0.005em;
+	}
+	.linha:hover h3 {
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 4px;
+	}
+	.linha p {
+		margin: 0;
+		color: var(--mute);
+		font-family: var(--f-corpo);
+		font-size: 15.5px;
+		line-height: 1.55;
+		max-width: 68ch;
+	}
+	/* versão para a coluna lateral da home */
+	.compacta {
+		padding: 18px 0;
+	}
+	.compacta h3 {
+		font-size: 19px;
+		margin: 8px 0 0;
+	}
+</style>

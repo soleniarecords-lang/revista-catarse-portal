@@ -1,0 +1,120 @@
+---
+// Imagem da matéria quando existe (com alt); senão, capa tipográfica: gradiente verde granulado, tingido pelo
+// tom do quadro. Nunca imagem gerada por IA: sem imagem liberada, é isto aqui.
+import type { Materia } from '../lib/materias';
+import { numEdicao } from '../lib/materias';
+
+interface Props {
+	materia: Pick<Materia, 'imagem' | 'titulo' | 'quadro' | 'edicao'>;
+	grande?: boolean;
+}
+const { materia, grande = false } = Astro.props;
+const { quadro } = materia;
+
+// A posição dos "borrões" do gradiente vem do título: cada capa é única, mas sempre igual a si mesma.
+let h = 0;
+for (const c of materia.titulo) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+const pos = (deslocamento: number, minimo: number, faixa: number) => `${minimo + ((h >>> deslocamento) % faixa)}%`;
+const estilo = [
+	`--tom:${quadro.cor}`,
+	`--x1:${pos(0, 0, 40)}`,
+	`--y1:${pos(5, 0, 35)}`,
+	`--x2:${pos(10, 60, 40)}`,
+	`--y2:${pos(15, 62, 38)}`,
+	`--x3:${pos(20, 25, 50)}`,
+].join(';');
+---
+
+{
+	materia.imagem ? (
+		<img src={materia.imagem} alt="" loading="lazy" class="capa" />
+	) : (
+		<div class:list={['capa', 'tipografica', { grande }]} style={estilo}>
+			<span class="topo">
+				Revista Catarse{materia.edicao !== undefined && ` · Edição ${numEdicao(materia.edicao)}`}
+			</span>
+			<span class="nome">{quadro.nome}</span>
+			<span class="chamada">{quadro.chamada}</span>
+		</div>
+	)
+}
+
+<style>
+	.tipografica {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		min-height: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		gap: 6px;
+		padding: 22px 24px;
+		color: var(--tinta);
+		/* o granulado é a primeira camada do próprio fundo (sem elemento extra) */
+		background:
+			var(--grao-img),
+			radial-gradient(62% 88% at var(--x1) var(--y1), color-mix(in srgb, var(--tom) var(--capa-f1), var(--capa-mistura)) 0%, transparent 74%),
+			radial-gradient(72% 82% at var(--x2) var(--y2), color-mix(in srgb, var(--tom) var(--capa-f2), var(--capa-mistura)) 0%, transparent 72%),
+			radial-gradient(46% 62% at var(--x3) 46%, color-mix(in srgb, var(--tom) 12%, var(--capa-mistura)) 0%, transparent 72%),
+			var(--capa-base);
+		background-size: 220px 220px, auto, auto, auto, auto;
+	}
+	.tipografica > span {
+		position: relative;
+		z-index: 1;
+	}
+	.topo {
+		position: absolute !important;
+		top: 18px;
+		left: 24px;
+		font-family: var(--f-ui);
+		font-size: 10.5px;
+		font-weight: 600;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--mute);
+	}
+	.nome {
+		font-family: var(--f-titulo);
+		font-style: italic;
+		font-weight: 800;
+		font-size: clamp(28px, 3.4vw, 40px);
+		line-height: 1;
+		letter-spacing: -0.01em;
+	}
+	.chamada {
+		font-family: var(--f-ui);
+		font-size: 10.5px;
+		font-weight: 600;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--mute);
+	}
+
+	/* no destaque da home o nome do quadro vai grande, no topo; o texto da matéria fica embaixo */
+	.grande {
+		justify-content: flex-start;
+		padding: 60px 44px;
+	}
+	.grande .nome {
+		font-size: clamp(46px, 7.2vw, 104px);
+		color: color-mix(in srgb, var(--tom) 62%, var(--tinta));
+		opacity: 0.92;
+	}
+	.grande .topo {
+		top: 26px;
+		left: 44px;
+	}
+	.grande .chamada {
+		display: none;
+	}
+	@media (max-width: 640px) {
+		.grande {
+			padding: 52px 24px;
+		}
+		.grande .topo {
+			left: 24px;
+		}
+	}
+</style>

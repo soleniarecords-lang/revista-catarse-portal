@@ -1,0 +1,89 @@
+---
+import { Font } from 'astro:assets';
+import { quadros } from '../data/quadros';
+import { LEMA, NOME_SITE } from '../data/site';
+import Cabecalho from '../components/Cabecalho.astro';
+import Rodape from '../components/Rodape.astro';
+import '../styles/global.css';
+
+interface Props {
+	titulo?: string;
+	descricao?: string;
+	tipo?: 'website' | 'article';
+	imagem?: string;
+	publicadoEm?: Date;
+	secao?: string;
+	jsonld?: object | object[];
+}
+
+const {
+	titulo,
+	descricao = `${LEMA}. Revista da Solenia Records: mercado, bastidores, perfis e ensaios sobre música.`,
+	tipo = 'website',
+	imagem,
+	publicadoEm,
+	secao,
+	jsonld,
+} = Astro.props;
+
+const tituloCompleto = titulo ? `${titulo} | ${NOME_SITE}` : `${NOME_SITE}: ${LEMA}`;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const og = imagem ? new URL(imagem, Astro.site).href : new URL('/logo-catarse-wide.png', Astro.site).href;
+const atual = Astro.url.pathname;
+const grafo = jsonld
+	? JSON.stringify({ '@context': 'https://schema.org', '@graph': [jsonld].flat() }).replace(/</g, '\\u003c')
+	: null;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#fbfcfb" />
+		<!-- aplica o tema (claro/escuro) antes de pintar a página, para não piscar -->
+		<script is:inline>
+			(function () {
+				var t = null;
+				try {
+					t = localStorage.getItem('tema');
+				} catch (e) {}
+				if (t !== 'claro' && t !== 'escuro') {
+					t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+				}
+				// ?tema=claro ou ?tema=escuro força o tema só nesta visita (não grava a escolha)
+				var q = /[?&]tema=(claro|escuro)/.exec(location.search);
+				if (q) t = q[1];
+				document.documentElement.dataset.tema = t;
+				var m = document.querySelector('meta[name="theme-color"]');
+				if (m) m.setAttribute('content', t === 'escuro' ? '#050706' : '#fbfcfb');
+			})();
+		</script>
+		<link rel="icon" type="image/png" href="/logo-catarse.png" />
+		<title>{tituloCompleto}</title>
+		<meta name="description" content={descricao} />
+		<link rel="canonical" href={canonical} />
+		<link rel="sitemap" href="/sitemap-index.xml" />
+		<meta property="og:site_name" content={NOME_SITE} />
+		<meta property="og:locale" content="pt_BR" />
+		<meta property="og:type" content={tipo} />
+		<meta property="og:title" content={tituloCompleto} />
+		<meta property="og:description" content={descricao} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={og} />
+		{publicadoEm && <meta property="article:published_time" content={publicadoEm.toISOString()} />}
+		{secao && <meta property="article:section" content={secao} />}
+		<meta name="twitter:card" content="summary_large_image" />
+		<Font cssVariable="--font-titulo" preload />
+		<Font cssVariable="--font-corpo" preload />
+		<Font cssVariable="--font-ui" preload />
+		{grafo && <script type="application/ld+json" set:html={grafo} />}
+	</head>
+	<body>
+		<Cabecalho atual={atual} quadros={quadros} />
+		<main>
+			<slot />
+		</main>
+		<Rodape />
+	</body>
+</html>

@@ -1,0 +1,165 @@
+---
+import Base from '../layouts/Base.astro';
+import Capa from '../components/Capa.astro';
+import Cartao from '../components/Cartao.astro';
+import Player from '../components/Player.astro';
+import LinhaNoticia from '../components/LinhaNoticia.astro';
+import InscricaoSubstack from '../components/InscricaoSubstack.astro';
+import { getMaterias, hrefMateria, mesLongo, numEdicao, rotuloMeta, type Materia } from '../lib/materias';
+import { jsonLdHome } from '../lib/seo';
+
+const materias = await getMaterias();
+// destaque: a mais recente com imagem liberada; sem nenhuma, a primeira da edição mais nova
+const destaque = materias.find((m) => m.imagem) ?? materias.find((m) => m.origem === 'edicao') ?? materias[0];
+const resto = materias.filter((m) => m !== destaque && !m.audio && m.origem !== 'noticia');
+const podcasts = materias.filter((m) => m.audio);
+const noticias = materias.filter((m) => m.origem === 'noticia' && m !== destaque);
+const lateral = noticias.slice(0, 5);
+
+// edições da mais nova para a mais antiga; depois o que veio só do Substack
+const edicoes = new Map<number, Materia[]>();
+const doSubstack: Materia[] = [];
+for (const m of resto) {
+	if (m.edicao === undefined) doSubstack.push(m);
+	else edicoes.set(m.edicao, [...(edicoes.get(m.edicao) ?? []), m]);
+}
+const dev = import.meta.env.DEV;
+---
+
+<Base jsonld={jsonLdHome(Astro.site!)}>
+	<div class="wrap">
+		{
+			destaque ? (
+				<section class:list={['topo-home', { sozinho: lateral.length === 0 }]}>
+					<a class:list={['heroi', { 'com-imagem': !!destaque.imagem }]} href={hrefMateria(destaque)}>
+						<div class="capa"><Capa materia={destaque} grande /></div>
+						{destaque.imagem && destaque.credito && <span class="credito-heroi">{destaque.credito}</span>}
+						<div class:list={['texto', { 'sobre-capa': !destaque.imagem }]}>
+							<div class="meta">
+								<i class="marca" style={`background:${destaque.quadro.cor}`}></i>
+								<span>{destaque.quadro.nome}</span>
+								<span class="pt">•</span>
+								<span>{rotuloMeta(destaque)}</span>
+								{dev && !destaque.aprovado && <span class="selo">rascunho</span>}
+							</div>
+							<h2>{destaque.titulo}</h2>
+							{destaque.subtitulo && <p>{destaque.subtitulo}</p>}
+							<span class="leia">
+								<span class="seta" aria-hidden="true">→</span> Leia a matéria
+							</span>
+						</div>
+					</a>
+
+					{lateral.length > 0 && (
+						<aside class="lateral" aria-label="Últimas notícias">
+							<h2 class="rotulo">Últimas notícias</h2>
+							{lateral.map((m) => <LinhaNoticia materia={m} compacta />)}
+							<a class="todos" href="/noticias/">Todas as notícias →</a>
+						</aside>
+					)}
+				</section>
+			) : (
+				<p class="vazio">Nenhuma matéria aprovada ainda.</p>
+			)
+		}
+
+		{
+			[...edicoes.entries()].map(([n, lista]) => (
+				<section>
+					<h2 class="titulo-secao">Edição {numEdicao(n)} · {mesLongo(lista[0].data)}</h2>
+					<div class="grade">
+						{lista.map((m) => <Cartao materia={m} />)}
+					</div>
+				</section>
+			))
+		}
+
+		{
+			podcasts.length > 0 && (
+				<section>
+					<h2 class="titulo-secao">Podcasts</h2>
+					<div class="pod-destaque">
+						<div class="meta">
+							<span>Último episódio</span>
+							<span class="pt">•</span>
+							<span>{rotuloMeta(podcasts[0])}</span>
+						</div>
+						<h3><a href={hrefMateria(podcasts[0])}>{podcasts[0].titulo}</a></h3>
+						{podcasts[0].subtitulo && <p>{podcasts[0].subtitulo}</p>}
+						<Player src={podcasts[0].audio!} titulo={podcasts[0].titulo} />
+						<a class="todos-pod" href="/podcast/">Ver os {podcasts.length} episódios →</a>
+					</div>
+				</section>
+			)
+		}
+
+		{
+			doSubstack.length > 0 && (
+				<section>
+					<h2 class="titulo-secao">Do arquivo da Substack</h2>
+					<div class="grade">
+						{doSubstack.map((m) => <Cartao materia={m} />)}
+					</div>
+				</section>
+			)
+		}
+
+		<InscricaoSubstack />
+	</div>
+</Base>
+
+<style>
+	/* com capa tipográfica, o texto deixa espaço no topo para o nome grande do quadro */
+	.sobre-capa {
+		padding-top: 170px !important;
+	}
+	/* crédito da foto do destaque (obrigatório pelas licenças CC), no canto superior */
+	.credito-heroi {
+		position: absolute;
+		top: 16px;
+		right: 20px;
+		z-index: 2;
+		max-width: 60%;
+		text-align: right;
+		font-size: 11px;
+		letter-spacing: 0.04em;
+		color: rgba(255, 255, 255, 0.85);
+		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+	}
+	.pod-destaque {
+		max-width: 820px;
+		padding: 30px 32px;
+		border: 1px solid var(--linha);
+		border-radius: var(--raio);
+		background:
+			var(--grao-img),
+			radial-gradient(70% 100% at 0% 0%, color-mix(in srgb, var(--acento) 14%, transparent), transparent 70%),
+			var(--elevado);
+		background-size: 220px 220px, auto, auto;
+	}
+	.pod-destaque h3 {
+		margin: 12px 0 8px;
+		font-family: var(--f-titulo);
+		font-weight: 700;
+		font-size: 28px;
+		line-height: 1.2;
+	}
+	.pod-destaque p {
+		margin: 0 0 20px;
+		color: var(--mute);
+		font-family: var(--f-corpo);
+	}
+	.todos-pod {
+		display: inline-block;
+		margin-top: 20px;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--acento-texto);
+	}
+	.todos-pod:hover {
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+</style>

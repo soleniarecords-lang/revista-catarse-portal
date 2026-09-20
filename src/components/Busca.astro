@@ -1,0 +1,297 @@
+---
+// Painel de busca do site. O botão que abre fica no Cabecalho (data-abrir-busca).
+// A busca roda no navegador sobre /busca.json (só conteúdo aprovado).
+---
+
+<dialog class="busca" aria-label="Buscar no site" data-busca>
+	<form class="campo" role="search" method="dialog" onsubmit="return false">
+		<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+			<circle cx="10.5" cy="10.5" r="6.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+			<path d="m15.3 15.3 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+		</svg>
+		<input type="search" name="q" placeholder="Buscar matérias, artistas, temas" autocomplete="off" spellcheck="false" aria-label="Termo de busca" data-busca-campo />
+		<button type="button" class="fechar" aria-label="Fechar busca" data-fechar-busca>Esc</button>
+	</form>
+	<p class="estado" data-busca-estado aria-live="polite">Digite para buscar em títulos, subtítulos e textos.</p>
+	<ul class="resultados" data-busca-lista></ul>
+</dialog>
+
+<script>
+	type Item = { t: string; s: string; q: string; c: string; d: string; u: string; p: number; x: string };
+	type Indexado = Item & { nt: string; ns: string; nq: string; nx: string };
+
+	const dialog = document.querySelector<HTMLDialogElement>('[data-busca]')!;
+	const campo = dialog.querySelector<HTMLInputElement>('[data-busca-campo]')!;
+	const estado = dialog.querySelector<HTMLElement>('[data-busca-estado]')!;
+	const lista = dialog.querySelector<HTMLUListElement>('[data-busca-lista]')!;
+	let indice: Indexado[] | null = null;
+	let gatilho: HTMLElement | null = null;
+
+	// minúsculas e sem acento, mantendo o mesmo comprimento do texto (para achar o trecho original)
+	const norm = (s: string) => [...s].map((c) => c.normalize('NFD').replace(/[̀-ͯ]/g, '')[0] ?? c).join('').toLowerCase();
+
+	// termos de 1 a 2 letras (ex.: "ia") só valem como palavra inteira; os maiores casam em qualquer parte
+	const eLetra = /[p{L}d]/u;
+	function acha(n: string, t: string, desde = 0): number {
+		let i = n.indexOf(t, desde);
+		if (t.length >= 3) return i;
+		while (i !== -1) {
+			if (!eLetra.test(i === 0 ? '' : n[i - 1]) && !eLetra.test(n[i + t.length] ?? '')) return i;
+			i = n.indexOf(t, i + 1);
+		}
+		return -1;
+	}
+
+	async function carregar() {
+		if (indice) return indice;
+		estado.textContent = 'Carregando…';
+		try {
+			const r = await fetch('/busca.json');
+			const dados: Item[] = await r.json();
+			indice = dados.map((i) => ({ ...i, nt: norm(i.t), ns: norm(i.s), nq: norm(i.q), nx: norm(i.x) }));
+		} catch {
+			indice = [];
+			estado.textContent = 'Não foi possível carregar a busca agora. Tente de novo.';
+		}
+		return indice;
+	}
+
+	/** Texto com os termos achados dentro de <mark>, montado com nós de DOM (nada de innerHTML). */
+	function destacar(texto: string, termos: string[]): DocumentFragment {
+		const n = norm(texto);
+		const marcas: [number, number][] = [];
+		for (const t of termos) {
+			let i = acha(n, t);
+			while (i !== -1) {
+				marcas.push([i, i + t.length]);
+				i = acha(n, t, i + t.length);
+			}
+		}
+		marcas.sort((a, b) => a[0] - b[0]);
+		const juntas: [number, number][] = [];
+		for (const m of marcas) {
+			const ultima = juntas[juntas.length - 1];
+			if (ultima && m[0] <= ultima[1]) ultima[1] = Math.max(ultima[1], m[1]);
+			else juntas.push([...m]);
+		}
+		const frag = document.createDocumentFragment();
+		let pos = 0;
+		for (const [a, b] of juntas) {
+			if (a > pos) frag.append(texto.slice(pos, a));
+			const mk = document.createElement('mark');
+			mk.textContent = texto.slice(a, b);
+			frag.append(mk);
+			pos = b;
+		}
+		if (pos < texto.length) frag.append(texto.slice(pos));
+		return frag;
+	}
+
+	function trecho(i: Indexado, termos: string[]): string {
+		const achado = termos.map((t) => acha(i.nx, t)).filter((p) => p >= 0).sort((a, b) => a - b)[0];
+		if (achado === undefined) return '';
+		const ini = Math.max(0, achado - 70);
+		const fim = Math.min(i.x.length, achado + 130);
+		return (ini > 0 ? '…' : '') + i.x.slice(ini, fim).trim() + (fim < i.x.length ? '…' : '');
+	}
+
+	function buscar(consulta: string) {
+		const termos = norm(consulta).split(/\s+/).filter(Boolean);
+		lista.replaceChildren();
+		if (!termos.length) {
+			estado.textContent = 'Digite para buscar em títulos, subtítulos e textos.';
+			return;
+		}
+		const achados = (indice ?? [])
+			.map((i) => {
+				let pontos = 0;
+				for (const t of termos) {
+					let p = 0;
+					if (acha(i.nt, t) >= 0) p += 10;
+					if (acha(i.ns, t) >= 0) p += 5;
+					if (acha(i.nq, t) >= 0) p += 4;
+					if (acha(i.nx, t) >= 0) p += 1;
+					if (!p) return null; // todos os termos precisam aparecer
+					pontos += p;
+				}
+				return { i, pontos };
+			})
+			.filter((r): r is { i: Indexado; pontos: number } => r !== null)
+			.sort((a, b) => b.pontos - a.pontos)
+			.slice(0, 10);
+
+		estado.textContent = achados.length
+			? `${achados.length} ${achados.length === 1 ? 'resultado' : 'resultados'}`
+			: `Nada encontrado para "${consulta.trim()}".`;
+
+		for (const { i } of achados) {
+			const li = document.createElement('li');
+			const a = document.createElement('a');
+			a.href = i.u;
+
+			const meta = document.createElement('span');
+			meta.className = 'meta';
+			const bolinha = document.createElement('i');
+			bolinha.className = 'marca';
+			bolinha.style.background = i.c;
+			meta.append(bolinha, `${i.q} · ${i.d}${i.p ? ' · podcast' : ''}`);
+
+			const titulo = document.createElement('strong');
+			titulo.append(destacar(i.t, termos));
+
+			a.append(meta, titulo);
+			const t = trecho(i, termos);
+			if (t) {
+				const p = document.createElement('span');
+				p.className = 'trecho';
+				p.append(destacar(t, termos));
+				a.append(p);
+			}
+			li.append(a);
+			lista.append(li);
+		}
+	}
+
+	async function abrir(origem?: HTMLElement | null) {
+		gatilho = origem ?? (document.activeElement as HTMLElement | null);
+		if (!dialog.open) dialog.showModal();
+		campo.focus();
+		campo.select();
+		await carregar();
+		buscar(campo.value);
+	}
+
+	document.querySelectorAll<HTMLElement>('[data-abrir-busca]').forEach((b) => b.addEventListener('click', () => abrir(b)));
+	dialog.querySelector('[data-fechar-busca]')?.addEventListener('click', () => dialog.close());
+	campo.addEventListener('input', () => buscar(campo.value));
+	// clicar fora do painel fecha
+	dialog.addEventListener('click', (e) => {
+		const r = dialog.getBoundingClientRect();
+		if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close();
+	});
+	dialog.addEventListener('close', () => gatilho?.focus());
+	// atalhos: "/" ou Ctrl/Cmd+K abrem a busca (menos quando a pessoa já está digitando)
+	document.addEventListener('keydown', (e) => {
+		const digitando = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target as HTMLElement)?.tagName ?? '') || (e.target as HTMLElement)?.isContentEditable;
+		if ((e.key === '/' && !digitando) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')) {
+			e.preventDefault();
+			abrir();
+		}
+	});
+</script>
+
+<style>
+	.busca {
+		width: min(720px, calc(100vw - 32px));
+		max-height: min(76vh, 640px);
+		margin: 11vh auto auto;
+		padding: 0;
+		border: 1px solid var(--linha);
+		border-radius: 16px;
+		background: var(--bg);
+		color: var(--tinta);
+		box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.45);
+		overflow: hidden;
+		flex-direction: column;
+	}
+	.busca[open] {
+		display: flex;
+	}
+	.busca::backdrop {
+		background: rgba(0, 0, 0, 0.5);
+	}
+	.campo {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 16px 18px;
+		border-bottom: 1px solid var(--linha);
+		color: var(--mute);
+	}
+	.campo input {
+		flex: 1;
+		min-width: 0;
+		border: 0;
+		outline: 0;
+		background: transparent;
+		color: var(--tinta);
+		font-family: var(--f-titulo);
+		font-size: 22px;
+		font-weight: 700;
+	}
+	.campo input::placeholder {
+		color: var(--mute-2);
+		font-weight: 400;
+	}
+	.campo input::-webkit-search-cancel-button {
+		display: none;
+	}
+	.fechar {
+		border: 1px solid var(--linha);
+		border-radius: 8px;
+		background: transparent;
+		color: var(--mute);
+		font-family: var(--f-ui);
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		padding: 4px 9px;
+		cursor: pointer;
+	}
+	.fechar:hover {
+		color: var(--tinta);
+		border-color: var(--acento);
+	}
+	.estado {
+		margin: 0;
+		padding: 12px 20px 4px;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--mute);
+	}
+	.resultados {
+		list-style: none;
+		margin: 0;
+		padding: 0 8px 10px;
+		overflow-y: auto;
+	}
+	.resultados :global(li a) {
+		display: block;
+		padding: 14px 12px;
+		border-radius: 10px;
+	}
+	.resultados :global(li a:hover),
+	.resultados :global(li a:focus-visible) {
+		background: color-mix(in srgb, var(--acento) 10%, transparent);
+	}
+	.resultados :global(strong) {
+		display: block;
+		margin: 6px 0 4px;
+		font-family: var(--f-titulo);
+		font-size: 19px;
+		line-height: 1.25;
+	}
+	.resultados :global(.trecho) {
+		display: block;
+		color: var(--mute);
+		font-family: var(--f-corpo);
+		font-size: 14px;
+		line-height: 1.55;
+	}
+	.resultados :global(mark) {
+		background: color-mix(in srgb, var(--acento) 26%, transparent);
+		color: inherit;
+		border-radius: 3px;
+		padding: 0 1px;
+	}
+	@media (max-width: 640px) {
+		.busca {
+			margin-top: 8vh;
+		}
+		.campo input {
+			font-size: 18px;
+		}
+	}
+</style>

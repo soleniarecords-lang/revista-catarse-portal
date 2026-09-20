@@ -1,0 +1,67 @@
+---
+import Base from '../../layouts/Base.astro';
+import Player from '../../components/Player.astro';
+import { getPodcasts, hrefMateria, rotuloMeta } from '../../lib/materias';
+
+const episodios = await getPodcasts();
+const dev = import.meta.env.DEV;
+---
+
+<Base titulo="Podcasts" descricao="Episódios da Revista Catarse: conversas e faixa a faixa sobre discos e bandas.">
+	<div class="wrap">
+		<header class="cab-quadro">
+			<div class="filete" style="background:var(--acento)"></div>
+			<h1>Podcasts</h1>
+			<p class="desc">Conversas, entrevistas e discos ouvidos faixa a faixa.</p>
+		</header>
+		<h2 class="titulo-secao">{episodios.length} {episodios.length === 1 ? 'episódio' : 'episódios'}</h2>
+		{
+			episodios.length ? (
+				<ul class="episodios">
+					{episodios.map((m) => (
+						<li>
+							<div class="meta">
+								<i class="marca" style={`background:${m.quadro.cor}`}></i>
+								<span>{m.quadro.nome}</span>
+								<span class="pt">•</span>
+								<span>{rotuloMeta(m)}</span>
+								{dev && !m.aprovado && <span class="selo">rascunho</span>}
+							</div>
+							<h3><a href={hrefMateria(m)}>{m.titulo}</a></h3>
+							{m.subtitulo && <p>{m.subtitulo}</p>}
+							<Player src={m.audio!} titulo={m.titulo} />
+						</li>
+					))}
+				</ul>
+			) : (
+				<p class="vazio">Nenhum episódio publicado ainda.</p>
+			)
+		}
+	</div>
+</Base>
+
+<style>
+	.episodios {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 40px;
+		max-width: 780px;
+	}
+	.episodios h3 {
+		margin: 10px 0 6px;
+		font-family: var(--f-titulo);
+		font-weight: 700;
+		font-size: 28px;
+		line-height: 1.2;
+	}
+	.episodios h3 a:hover {
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+	.episodios p {
+		margin: 0 0 16px;
+		color: #d0d0d0;
+	}
+</style>

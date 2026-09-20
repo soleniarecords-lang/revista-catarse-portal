@@ -1,0 +1,47 @@
+---
+import Base from '../../layouts/Base.astro';
+import LinhaNoticia from '../../components/LinhaNoticia.astro';
+import { diaBRT, getMaterias, rotuloDia, type Materia } from '../../lib/materias';
+
+const noticias = (await getMaterias()).filter((m) => m.origem === 'noticia');
+
+// agrupa por dia (fuso de Brasília), do mais recente para o mais antigo
+const dias = new Map<string, Materia[]>();
+for (const m of noticias) {
+	const d = diaBRT(m.data);
+	dias.set(d, [...(dias.get(d) ?? []), m]);
+}
+---
+
+<Base titulo="Notícias" descricao="As notícias do dia na música, reescritas pela ótica da Revista Catarse: contexto e o que muda para quem faz música independente.">
+	<div class="wrap">
+		<header class="cab-quadro">
+			<div class="filete" style="background:var(--acento)"></div>
+			<h1>Notícias</h1>
+			<p class="chamada">Todo dia</p>
+			<p class="desc">
+				O que aconteceu na música, com contexto e a pergunta a mais: por que importa e o que muda para quem faz música
+				independente. Sempre com as fontes citadas.
+			</p>
+		</header>
+
+		{
+			dias.size ? (
+				[...dias.entries()].map(([dia, lista]) => (
+					<section>
+						<h2 class="titulo-secao">{rotuloDia(lista[0].data)}</h2>
+						<div class="lista">{lista.map((m) => <LinhaNoticia materia={m} />)}</div>
+					</section>
+				))
+			) : (
+				<p class="vazio">Ainda não há notícias publicadas.</p>
+			)
+		}
+	</div>
+</Base>
+
+<style>
+	.lista {
+		max-width: 860px;
+	}
+</style>

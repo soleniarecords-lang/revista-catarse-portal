@@ -1,0 +1,11 @@
+{
+	// Site estático: a Cloudflare só guarda e entrega os arquivos da pasta dist/ (sem script de servidor).
+	// Publicar: build + `npx wrangler deploy` (feito pela skill /catarse-publicar, sempre com confirmação).
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "revista-catarse",
+	"compatibility_date": "2026-09-19",
+	"assets": {
+		"directory": "./dist",
+		"not_found_handling": "404-page"
+	}
+}

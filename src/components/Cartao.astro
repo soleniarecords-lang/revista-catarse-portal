@@ -1,0 +1,25 @@
+---
+import Capa from './Capa.astro';
+import { hrefMateria, rotuloMeta, type Materia } from '../lib/materias';
+
+interface Props {
+	materia: Materia;
+}
+const { materia: m } = Astro.props;
+const dev = import.meta.env.DEV;
+---
+
+<a class="card" href={hrefMateria(m)}>
+	<div class="miniatura"><Capa materia={m} /></div>
+	<h3>{m.titulo}</h3>
+	{m.subtitulo && <p>{m.subtitulo}</p>}
+	<div class="meta">
+		<i class="marca" style={`background:${m.quadro.cor}`}></i>
+		<span>{m.quadro.nome}</span>
+		<span class="pt">•</span>
+		<span>{rotuloMeta(m)}</span>
+		{m.audio && <span class="selo pod">▶ podcast</span>}
+		{dev && !m.aprovado && <span class="selo">rascunho</span>}
+		{dev && m.pendencias > 0 && <span class="selo pend">{m.pendencias} a confirmar</span>}
+	</div>
+</a>

@@ -1,0 +1,5 @@
+{
+	"_leia-me": "'projeto' é o nome do Worker na Cloudflare (igual ao 'name' de wrangler.jsonc). 'siteUrl' é o endereço público usado no build (canonical, sitemap, dados estruturados). Quando houver domínio próprio, troque 'siteUrl' (ex.: https://revistacatarse.com.br), aponte o domínio para o Worker no painel da Cloudflare e publique de novo.",
+	"projeto": "revista-catarse",
+	"siteUrl": "https://revista-catarse.revista-catarse-portal.workers.dev"
+}

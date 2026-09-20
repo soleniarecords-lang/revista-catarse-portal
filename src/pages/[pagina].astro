@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import InscricaoSubstack from '../components/InscricaoSubstack.astro';
+import { render } from 'astro:content';
+import { getPaginas } from '../lib/paginas';
+
+export async function getStaticPaths() {
+	return (await getPaginas()).map((p) => ({ params: { pagina: p.id }, props: { p } }));
+}
+
+const { p } = Astro.props;
+const { Content } = await render(p);
+const dev = import.meta.env.DEV;
+---
+
+<Base titulo={p.data.titulo} descricao={p.data.descricao}>
+	<article class="artigo">
+		<h1>{p.data.titulo}</h1>
+		{
+			dev && !p.data.aprovado && (
+				<p class="aviso-rascunho">
+					Rascunho: só aparece no <code>npm run dev</code>. Para publicar, marque <code>aprovado: true</code> em src/paginas/{p.id}.md.
+				</p>
+			)
+		}
+		{
+			p.pendencias > 0 && (
+				<p class="aviso-rascunho pend">
+					Esta página tem {p.pendencias} [CONFIRMAR]. O build de produção recusa página assim.
+				</p>
+			)
+		}
+		<div class="prosa"><Content /></div>
+	</article>
+	{p.id === 'contato' && <div class="wrap"><InscricaoSubstack /></div>}
+</Base>

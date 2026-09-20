@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import Cartao from '../../components/Cartao.astro';
+import { autores, hrefAutor, autorPorNome } from '../../data/autores';
+import { getMaterias } from '../../lib/materias';
+import { jsonLdAutor } from '../../lib/seo';
+
+export function getStaticPaths() {
+	return autores.map((a) => ({ params: { autor: a.slug }, props: { a } }));
+}
+
+const { a } = Astro.props;
+const materias = (await getMaterias()).filter((m) => autorPorNome(m.autor).slug === a.slug);
+const url = new URL(hrefAutor(a), Astro.site).href;
+---
+
+<Base titulo={a.nome} descricao={a.descricao} jsonld={jsonLdAutor(a.nome, a.descricao, url, Astro.site!)}>
+	<div class="wrap">
+		<header class="cab-quadro">
+			<div class="filete" style="background:var(--acento)"></div>
+			<h1>{a.nome}</h1>
+			<p class="desc">{a.descricao}</p>
+		</header>
+		<h2 class="titulo-secao">{materias.length} {materias.length === 1 ? 'matéria' : 'matérias'}</h2>
+		{
+			materias.length ? (
+				<div class="grade">{materias.map((m) => <Cartao materia={m} />)}</div>
+			) : (
+				<p class="vazio">Ainda não há matérias publicadas.</p>
+			)
+		}
+	</div>
+</Base>
