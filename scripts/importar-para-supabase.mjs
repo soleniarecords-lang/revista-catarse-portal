@@ -32,6 +32,15 @@ async function dataDaEdicao(dir) {
 	return null;
 }
 
+// legenda das redes (Instagram e TikTok): arquivo ao lado da matéria, NN-slug.legenda.txt (o portal ignora esse arquivo)
+async function lerLegenda(dir, arq) {
+	try {
+		return (await readFile(path.join(dir, arq.replace(/[.]md$/, '.legenda.txt')), 'utf8')).replaceAll(String.fromCharCode(13), '').trim() || null;
+	} catch {
+		return null;
+	}
+}
+
 const materias = [];
 
 // edições
@@ -50,7 +59,7 @@ for (const pasta of (await readdir(dirEd, { withFileTypes: true })).filter((d) =
 		if (!dados.titulo || !slug) continue;
 		materias.push({
 			tipo: 'edicao', edicao: Number(pasta.name.replace('edicao-', '')), dia: null, ordem: Number(ordem), slug, dados, corpo,
-			data: dados.data || dataEd, fontes: [],
+			data: dados.data || dataEd, fontes: [], legenda: await lerLegenda(path.join(dirEd, pasta.name, 'textos'), arq),
 		});
 	}
 }
@@ -67,7 +76,7 @@ try {
 				const [nome, url] = l.split('|').map((s) => s.trim());
 				return { nome, url };
 			});
-			materias.push({ tipo: 'noticia', edicao: null, dia: dia.name, ordem: Number(ordem), slug, dados, corpo, data: dados.data || null, fontes });
+			materias.push({ tipo: 'noticia', edicao: null, dia: dia.name, ordem: Number(ordem), slug, dados, corpo, data: dados.data || null, fontes, legenda: await lerLegenda(path.join(dirNo, dia.name), arq) });
 		}
 	}
 } catch {}
@@ -87,10 +96,18 @@ for (const m of materias) {
 		quadro: d.quadro || 'Mainstream', titulo: d.titulo, subtitulo: d.subtitulo ?? '', corpo: m.corpo.trim(),
 		autor: d.autor || 'Redação Revista Catarse',
 		imagem_path: imagemPath, credito: d.credito || null, credito_url: d.credito_url || null, licenca_url: d.licenca_url || null,
-		fontes: m.fontes, status: publicada ? 'publicada' : 'rascunho',
+		fontes: m.fontes, legenda: m.legenda, status: publicada ? 'publicada' : 'rascunho',
 		data_publicacao: m.data ? new Date(m.data).toISOString() : null,
 		publicada_em: publicada && m.data ? new Date(m.data).toISOString() : null,
 	});
+}
+
+// --somente=slug1,slug2 limita a importação a essas matérias (não mexe nas demais, que podem ter sido editadas no Hub)
+const somente = process.argv.find((a) => a.startsWith('--somente='))?.slice(10).split(',');
+if (somente) {
+	for (const lista of [linhas, imagens]) {
+		for (let i = lista.length - 1; i >= 0; i--) if (!somente.includes(lista[i].slug)) lista.splice(i, 1);
+	}
 }
 
 const pub = linhas.filter((l) => l.status === 'publicada').length;
