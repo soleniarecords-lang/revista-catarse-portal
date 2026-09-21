@@ -1,7 +1,7 @@
 ---
 import { getPaginas } from '../lib/paginas';
 import { REDACAO, hrefAutor } from '../data/autores';
-import { SUBSTACK_URL } from '../data/site';
+import { INSTAGRAM_URL, SUBSTACK_URL, TIKTOK_URL } from '../data/site';
 
 const ano = new Date().getFullYear();
 const paginas = await getPaginas();
@@ -15,6 +15,8 @@ const paginas = await getPaginas();
 			{paginas.map((p) => <a href={`/${p.id}/`}>{p.data.titulo}</a>)}
 			<a href={hrefAutor(REDACAO)}>{REDACAO.nome}</a>
 			<a href={SUBSTACK_URL} rel="noopener">Substack</a>
+			<a href={INSTAGRAM_URL} rel="me noopener">Instagram</a>
+			<a href={TIKTOK_URL} rel="me noopener">TikTok</a>
 			<button type="button" class="link-cookies" data-abrir-cookies>Preferências de cookies</button>
 		</nav>
 		<p class="peq">Produzida e distribuída por Solenia Records · © {ano}</p>

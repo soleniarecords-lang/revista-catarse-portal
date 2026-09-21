@@ -1,7 +1,7 @@
 import type { Materia } from './materias';
 import { hrefMateria } from './materias';
 import { hrefAutor, autorPorNome } from '../data/autores';
-import { LEMA, NOME_SITE, SUBSTACK_URL } from '../data/site';
+import { LEMA, NOME_SITE, PERFIS_OFICIAIS } from '../data/site';
 
 const abs = (caminho: string, site: URL) => new URL(caminho, site).href;
 
@@ -16,7 +16,7 @@ export function organizacao(site: URL) {
 		alternateName: `${NOME_SITE}: ${LEMA}`,
 		url: abs('/', site),
 		logo: { '@type': 'ImageObject', url: abs('/logo-catarse.png', site), width: 346, height: 346 },
-		sameAs: [SUBSTACK_URL],
+		sameAs: PERFIS_OFICIAIS,
 		parentOrganization: { '@type': 'Organization', name: 'Solenia Records' },
 	};
 }
@@ -51,7 +51,7 @@ export function jsonLdMateria(m: Materia, site: URL, palavras?: number) {
 		inLanguage: 'pt-BR',
 		isAccessibleForFree: true,
 		articleSection: m.quadro.nome,
-		author: { '@type': 'Organization', name: autor.nome, url: abs(hrefAutor(autor), site) },
+		author: { '@type': 'Organization', name: autor.nome, url: abs(hrefAutor(autor), site), sameAs: PERFIS_OFICIAIS },
 		publisher: organizacao(site),
 		wordCount: palavras,
 		// só há imagem quando ela foi liberada e tem crédito (o build recusa imagem sem crédito)
@@ -81,6 +81,7 @@ export function jsonLdAutor(nome: string, descricao: string, url: string, site: 
 			name: nome,
 			description: descricao,
 			url,
+			sameAs: PERFIS_OFICIAIS,
 			worksFor: { '@id': abs('/#organizacao', site) },
 		},
 	};

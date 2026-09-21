@@ -107,6 +107,9 @@ const grafo = jsonld
 		<meta name="description" content={descricao} />
 		<link rel="canonical" href={canonical} />
 		<link rel="sitemap" href="/sitemap-index.xml" />
+		<link rel="alternate" type="application/rss+xml" title={`${NOME_SITE}: todas as matérias`} href="/rss.xml" />
+		<!-- libera imagem grande e trecho longo nos resultados do Google (Discover, Notícias, Busca) -->
+		<meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 		<meta property="og:site_name" content={NOME_SITE} />
 		<meta property="og:locale" content="pt_BR" />
 		<meta property="og:type" content={tipo} />
