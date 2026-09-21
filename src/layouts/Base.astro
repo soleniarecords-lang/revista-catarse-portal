@@ -1,7 +1,7 @@
 ---
 import { Font } from 'astro:assets';
 import { quadros } from '../data/quadros';
-import { GTM_ID, LEMA, NOME_SITE } from '../data/site';
+import { GA_ID, GTM_ID, LEMA, NOME_SITE } from '../data/site';
 import Cabecalho from '../components/Cabecalho.astro';
 import Rodape from '../components/Rodape.astro';
 import '../styles/global.css';
@@ -36,6 +36,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','${GTM_ID}');</script>
 <!-- End Google Tag Manager -->`
 	: '';
+const gaHead = import.meta.env.PROD
+	? `<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '${GA_ID}');
+</script>`
+	: '';
 const gtmBody = import.meta.env.PROD
 	? `<!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}"
@@ -56,6 +67,7 @@ const grafo = jsonld
 <html lang="pt-BR">
 	<head>
 		<Fragment set:html={gtmHead} />
+		<Fragment set:html={gaHead} />
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="theme-color" content="#fbfcfb" />
