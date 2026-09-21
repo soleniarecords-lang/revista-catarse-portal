@@ -4,6 +4,7 @@ import { quadros } from '../data/quadros';
 import { GA_ID, GTM_ID, LEMA, NOME_SITE } from '../data/site';
 import Cabecalho from '../components/Cabecalho.astro';
 import Rodape from '../components/Rodape.astro';
+import Cookies from '../components/Cookies.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -27,6 +28,17 @@ const {
 } = Astro.props;
 
 // Google Tag Manager: o trecho do <head> fica o mais alto possível e o <noscript> logo depois de abrir o <body>.
+// Consent Mode do Google: começa negado e só passa a "granted" depois do aceite (ver components/Cookies.astro).
+// Este trecho vem ANTES do GTM e do gtag, senão eles medem antes de saber a escolha.
+const consentimento = `<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', functionality_storage: 'granted', security_storage: 'granted', wait_for_update: 500 });
+try {
+  var c = JSON.parse(localStorage.getItem('catarse_cookies') || 'null');
+  if (c && c.v === 'aceito' && Date.now() - c.t < 31536000000) gtag('consent', 'update', { analytics_storage: 'granted' });
+} catch (e) {}
+</script>`;
 const gtmHead = import.meta.env.PROD
 	? `<!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -66,6 +78,7 @@ const grafo = jsonld
 <!doctype html>
 <html lang="pt-BR">
 	<head>
+		<Fragment set:html={consentimento} />
 		<Fragment set:html={gtmHead} />
 		<Fragment set:html={gaHead} />
 		<meta charset="utf-8" />
@@ -116,5 +129,6 @@ const grafo = jsonld
 			<slot />
 		</main>
 		<Rodape />
+		<Cookies />
 	</body>
 </html>

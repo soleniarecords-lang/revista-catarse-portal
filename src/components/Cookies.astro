@@ -1,0 +1,137 @@
+---
+// Aviso de cookies (LGPD) com o Consent Mode do Google: o Analytics só mede depois do "Aceitar".
+// A decisão fica salva no navegador (localStorage, chave catarse_cookies) por 12 meses.
+// O link "Preferências de cookies" do rodapé (data-abrir-cookies) reabre o aviso para mudar a escolha.
+---
+
+<div class="cookies" role="dialog" aria-live="polite" aria-label="Aviso de cookies" data-cookies hidden>
+	<p>
+		Usamos cookies de medição (Google Analytics) para entender como o site é lido. Eles só são ativados se você
+		aceitar, e o site funciona igual se você recusar. <a href="/privacidade/">Saiba mais</a>
+	</p>
+	<div class="acoes">
+		<button type="button" data-cookies-recusar>Recusar</button>
+		<button type="button" data-cookies-aceitar class="aceitar">Aceitar</button>
+	</div>
+</div>
+
+<script is:inline>
+	(function () {
+		var CHAVE = 'catarse_cookies';
+		var UM_ANO = 365 * 24 * 60 * 60 * 1000;
+		var caixa = document.querySelector('[data-cookies]');
+		if (!caixa) return;
+
+		function ler() {
+			try {
+				var c = JSON.parse(localStorage.getItem(CHAVE) || 'null');
+				if (c && (c.v === 'aceito' || c.v === 'recusado') && Date.now() - c.t < UM_ANO) return c.v;
+			} catch (e) {}
+			return null;
+		}
+		function gravar(v) {
+			try {
+				localStorage.setItem(CHAVE, JSON.stringify({ v: v, t: Date.now() }));
+			} catch (e) {}
+		}
+		function apagarCookiesDeMedicao() {
+			var partes = location.hostname.split('.');
+			var dominios = ['', location.hostname, '.' + location.hostname, '.' + partes.slice(-3).join('.'), '.' + partes.slice(-2).join('.')];
+			document.cookie.split(';').forEach(function (c) {
+				var nome = c.split('=')[0].trim();
+				if (nome.indexOf('_ga') !== 0) return;
+				dominios.forEach(function (d) {
+					document.cookie = nome + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + (d ? '; domain=' + d : '');
+				});
+			});
+		}
+		function decidir(v) {
+			gravar(v);
+			if (typeof window.gtag === 'function') window.gtag('consent', 'update', { analytics_storage: v === 'aceito' ? 'granted' : 'denied' });
+			if (v === 'recusado') apagarCookiesDeMedicao();
+			caixa.hidden = true;
+		}
+
+		caixa.querySelector('[data-cookies-aceitar]').addEventListener('click', function () {
+			decidir('aceito');
+		});
+		caixa.querySelector('[data-cookies-recusar]').addEventListener('click', function () {
+			decidir('recusado');
+		});
+		document.querySelectorAll('[data-abrir-cookies]').forEach(function (b) {
+			b.addEventListener('click', function () {
+				caixa.hidden = false;
+			});
+		});
+		if (!ler()) caixa.hidden = false;
+	})();
+</script>
+
+<style>
+	.cookies {
+		position: fixed;
+		z-index: 60;
+		left: 50%;
+		bottom: 16px;
+		transform: translateX(-50%);
+		width: min(760px, calc(100vw - 24px));
+		display: flex;
+		align-items: center;
+		gap: 18px;
+		padding: 16px 18px;
+		border: 1px solid var(--linha);
+		border-radius: 16px;
+		background: var(--bg);
+		color: var(--tinta);
+		box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.45);
+		font-family: var(--f-ui);
+		font-size: 14px;
+		line-height: 1.5;
+	}
+	.cookies[hidden] {
+		display: none;
+	}
+	p {
+		margin: 0;
+		flex: 1;
+	}
+	a {
+		color: var(--acento-texto);
+		text-decoration: underline;
+	}
+	.acoes {
+		display: flex;
+		gap: 8px;
+		flex-shrink: 0;
+	}
+	button {
+		min-width: 92px;
+		padding: 9px 16px;
+		border: 1px solid var(--linha);
+		border-radius: 999px;
+		background: transparent;
+		color: var(--tinta);
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+	}
+	button:hover,
+	button:focus-visible {
+		border-color: var(--acento);
+	}
+	.aceitar {
+		border-color: var(--acento);
+		background: var(--acento);
+		color: #fff;
+	}
+	@media (max-width: 600px) {
+		.cookies {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 12px;
+		}
+		.acoes button {
+			flex: 1;
+		}
+	}
+</style>

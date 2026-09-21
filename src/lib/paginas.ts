@@ -1,6 +1,6 @@
 import { getCollection } from 'astro:content';
 
-const ORDEM = ['quem-somos', 'politica-editorial', 'contato'];
+const ORDEM = ['quem-somos', 'politica-editorial', 'privacidade', 'contato'];
 
 /**
  * Mesma trava das matérias: no build só entra página com `aprovado: true`, e página aprovada

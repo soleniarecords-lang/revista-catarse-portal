@@ -15,6 +15,7 @@ const paginas = await getPaginas();
 			{paginas.map((p) => <a href={`/${p.id}/`}>{p.data.titulo}</a>)}
 			<a href={hrefAutor(REDACAO)}>{REDACAO.nome}</a>
 			<a href={SUBSTACK_URL} rel="noopener">Substack</a>
+			<button type="button" class="link-cookies" data-abrir-cookies>Preferências de cookies</button>
 		</nav>
 		<p class="peq">Produzida e distribuída por Solenia Records · © {ano}</p>
 	</div>
@@ -54,6 +55,17 @@ const paginas = await getPaginas();
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 		color: var(--mute);
+	}
+	.link-cookies {
+		border: 0;
+		background: none;
+		padding: 0;
+		font: inherit;
+		color: inherit;
+		cursor: pointer;
+	}
+	.link-cookies:hover {
+		color: var(--acento-texto);
 	}
 	.links a:hover {
 		color: var(--acento-texto);
