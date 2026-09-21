@@ -78,7 +78,8 @@ export async function getMaterias(): Promise<Materia[]> {
 		const d = entry.data;
 		const quadro = quadroPorNome(d.quadro);
 		if (!quadro) throw new Error(`noticias/${entry.id}: quadro desconhecido "${d.quadro}"`);
-		if (import.meta.env.PROD && d.aprovado) {
+		// Caderno Solenia é texto literário autoral da Catarse: não exige fontes
+		if (import.meta.env.PROD && d.aprovado && d.quadro !== 'Caderno Solenia') {
 			// regra editorial: nunca fonte única: pelo menos 2 veículos (domínios) diferentes
 			const dominios = new Set(d.fontes.map((f) => new URL(f.url).hostname.replace(/^www\./, '')));
 			if (dominios.size < 2) {

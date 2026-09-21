@@ -46,8 +46,10 @@ function validar(caminho, texto) {
 			erros.push(`fonte com URL inválida: "${f}"`);
 		}
 	}
-	if (dominios.size < 2) erros.push(`só ${dominios.size} veículo(s) diferente(s) em "fontes" — o mínimo é 2 (nunca fonte única)`);
-	if (corpo.trim().split(/\s+/).length < 120) erros.push('texto com menos de 120 palavras');
+	// Caderno Solenia é texto literário autoral da Catarse: não exige fontes nem tamanho mínimo
+	const literario = dados.quadro === 'Caderno Solenia';
+	if (!literario && dominios.size < 2) erros.push(`só ${dominios.size} veículo(s) diferente(s) em "fontes" — o mínimo é 2 (nunca fonte única)`);
+	if (!literario && corpo.trim().split(/\s+/).length < 120) erros.push('texto com menos de 120 palavras');
 	// regra de escrita do Luciano: nunca travessão (— –) nem hífen com espaços no papel de travessão
 	for (const [campo, valor] of [['título', dados.titulo], ['subtítulo', dados.subtitulo], ['texto', corpo]]) {
 		if (/[—–]|\S - \S/.test(valor ?? '')) erros.push(`${campo} com travessão (use vírgula, ponto, dois-pontos ou parênteses)`);
