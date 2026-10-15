@@ -14,6 +14,7 @@ const paginas = await getPaginas();
 		<nav class="links" aria-label="Institucional">
 			{paginas.map((p) => <a href={`/${p.id}/`}>{p.data.titulo}</a>)}
 			<a href={hrefAutor(REDACAO)}>{REDACAO.nome}</a>
+			<a href="/playlists/">Playlists</a>
 			<a href={SUBSTACK_URL} rel="noopener">Substack</a>
 			<a href={INSTAGRAM_URL} rel="me noopener">Instagram</a>
 			<a href={TIKTOK_URL} rel="me noopener">TikTok</a>

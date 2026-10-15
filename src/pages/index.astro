@@ -5,6 +5,7 @@ import Cartao from '../components/Cartao.astro';
 import Player from '../components/Player.astro';
 import LinhaNoticia from '../components/LinhaNoticia.astro';
 import InscricaoSubstack from '../components/InscricaoSubstack.astro';
+import SugestaoPlaylist from '../components/SugestaoPlaylist.astro';
 import { getMaterias, hrefMateria, mesLongo, numEdicao, rotuloMeta, type Materia } from '../lib/materias';
 import { jsonLdHome } from '../lib/seo';
 
@@ -73,6 +74,8 @@ const dev = import.meta.env.DEV;
 				</section>
 			))
 		}
+
+		<SugestaoPlaylist />
 
 		{
 			podcasts.length > 0 && (

@@ -42,6 +42,7 @@ const ativa = (href: string) => (href === '/' ? atual === '/' : atual.startsWith
 			<a href="/" class:list={['aba', { ativa: ativa('/') }]}>Início</a>
 			<a href="/noticias/" class:list={['aba', { ativa: ativa('/noticias/') }]}>Notícias</a>
 			<a href="/podcast/" class:list={['aba', { ativa: ativa('/podcast/') }]}>Podcasts</a>
+			<a href="/playlists/" class:list={['aba', { ativa: ativa('/playlists/') }]}>Playlists</a>
 			<details class="quadros-menu" data-menu-quadros>
 				<summary class:list={['aba', { ativa: atual.startsWith('/quadros/') }]}>
 					Quadros

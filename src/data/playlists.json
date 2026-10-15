@@ -1,0 +1,72 @@
+[
+	{
+		"id": "53aY4IspELUFo859MjlIZP",
+		"titulo": "Música Ambiente para Restaurante",
+		"curto": "Restaurante",
+		"ambiente": "Restaurante e almoço",
+		"chamada": "MPB, bossa nova e indie brasileiro em volume de conversa.",
+		"texto": "Para almoço, jantar e happy hour. Entra o que não briga com a conversa da mesa: voz e violão, bossa nova e o indie MPB do Hotel Brasil, da Florida Cup e do Luciano Simioni.",
+		"artistas": ["Hotel Brasil", "Florida Cup", "Luciano Simioni"],
+		"url": "https://open.spotify.com/playlist/53aY4IspELUFo859MjlIZP"
+	},
+	{
+		"id": "2oURi8idbCnoMeb8ptpW9b",
+		"titulo": "Música para Loja de Roupas",
+		"curto": "Loja",
+		"ambiente": "Loja e varejo",
+		"chamada": "Indie pop e pop alternativo com energia leve.",
+		"texto": "Som ambiente de loja: ritmo que acompanha quem está provando roupa sem cansar quem trabalha o dia inteiro. Luciano Simioni e Hotel Brasil entre o pop alternativo brasileiro.",
+		"artistas": ["Luciano Simioni", "Hotel Brasil"],
+		"url": "https://open.spotify.com/playlist/2oURi8idbCnoMeb8ptpW9b"
+	},
+	{
+		"id": "3hIACnBlT99z5H601SzuZP",
+		"titulo": "Música para Bar e Boteco",
+		"curto": "Bar",
+		"ambiente": "Bar, boteco e happy hour",
+		"chamada": "Rock nacional, rap rock, samba rock e MPB de mesa de bar.",
+		"texto": "A playlist do barzinho: guitarras, samba rock e as faixas que a mesa canta junto. Lado Beco, Florida Cup, JAOVAMP e Hotel Brasil no meio do rock e da MPB brasileira.",
+		"artistas": ["Lado Beco", "Florida Cup", "JAOVAMP", "Hotel Brasil"],
+		"url": "https://open.spotify.com/playlist/3hIACnBlT99z5H601SzuZP"
+	},
+	{
+		"id": "2RTTHiPQTtGBgNlz2BkwGR",
+		"titulo": "Música para Cafeteria e Café da Manhã",
+		"curto": "Cafeteria",
+		"ambiente": "Cafeteria e padaria",
+		"chamada": "Lo-fi brasileiro, indie folk e MPB acústica.",
+		"texto": "Para manhãs tranquilas e tardes de café. Violão, piano e vozes baixas, com Hotel Brasil, Florida Cup e Luciano Simioni entre o lo-fi e o folk brasileiro.",
+		"artistas": ["Hotel Brasil", "Florida Cup", "Luciano Simioni"],
+		"url": "https://open.spotify.com/playlist/2RTTHiPQTtGBgNlz2BkwGR"
+	},
+	{
+		"id": "0qsiLttL30sCfHQ78CAhvm",
+		"titulo": "Música para Academia e Treino",
+		"curto": "Academia",
+		"ambiente": "Academia e treino",
+		"chamada": "Rock pesado nacional, nu metal e hardcore brasileiro.",
+		"texto": "Para musculação, crossfit e cardio. Lado Beco e JAOVAMP puxam o ritmo no meio do rock pesado feito no Brasil.",
+		"artistas": ["Lado Beco", "JAOVAMP"],
+		"url": "https://open.spotify.com/playlist/0qsiLttL30sCfHQ78CAhvm"
+	},
+	{
+		"id": "5Vki09vOyFNJkticzHfjss",
+		"titulo": "Música para Barbearia",
+		"curto": "Barbearia",
+		"ambiente": "Barbearia",
+		"chamada": "Rock nacional, rap, emo e trap rock brasileiro.",
+		"texto": "Som de barbearia com atitude: rock, rap e emo nacionais, com Lado Beco, JAOVAMP e Luciano Simioni na cadeira.",
+		"artistas": ["Lado Beco", "JAOVAMP", "Luciano Simioni"],
+		"url": "https://open.spotify.com/playlist/5Vki09vOyFNJkticzHfjss"
+	},
+	{
+		"id": "2jEbIIvOij4t8maKcXfAH2",
+		"titulo": "Música Ambiente para Escritório e Coworking",
+		"curto": "Escritório",
+		"ambiente": "Escritório, coworking e home office",
+		"chamada": "Indie chill, lo-fi MPB e faixas para foco.",
+		"texto": "Para trabalhar com música sem perder a concentração. Hotel Brasil, Luciano Simioni e Florida Cup entre o indie chill e o lo-fi brasileiro.",
+		"artistas": ["Hotel Brasil", "Luciano Simioni", "Florida Cup"],
+		"url": "https://open.spotify.com/playlist/2jEbIIvOij4t8maKcXfAH2"
+	}
+]

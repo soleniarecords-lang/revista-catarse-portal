@@ -1,0 +1,245 @@
+---
+// Sugestão de playlist (pedido do Luciano em 15/10/2026): as playlists públicas da Solenia Records no Spotify
+// para ambientes (restaurante, loja, bar...). Na home entra uma em destaque, que muda conforme o dia do build,
+// e as outras como atalhos. O player do Spotify só carrega quando a pessoa clica na capa (sem cookie antes do clique).
+// Dados em src/data/playlists.json (mesmo arquivo do site da Solenia); capas em public/playlists/<id>.jpg.
+import playlists from '../data/playlists.json';
+
+interface Props {
+	/** true = todas as playlists com player (página /playlists/); false = uma em destaque e as outras como atalhos */
+	completa?: boolean;
+}
+const { completa = false } = Astro.props;
+
+const hoje = new Date();
+const diaDoAno = Math.floor((hoje.getTime() - new Date(hoje.getFullYear(), 0, 0).getTime()) / 86_400_000);
+const destaque = playlists[diaDoAno % playlists.length];
+const lista = completa ? playlists : [destaque];
+const outras = completa ? [] : playlists.filter((p) => p.id !== destaque.id);
+---
+
+<section class="sugestao" aria-labelledby="sugestao-titulo">
+	{!completa && <h2 class="titulo-secao" id="sugestao-titulo">Sugestão de playlist</h2>}
+	{
+		!completa && (
+			<p class="lead">
+				A socióloga Tia DeNora mostrou, em <em>Music in Everyday Life</em>, que a música de fundo organiza o humor de um lugar e o tempo de
+				quem fica nele. A Solenia Records mantém playlists públicas no Spotify para cada tipo de espaço, com música brasileira
+				independente e os artistas do selo no meio. Hoje a sugestão é esta.
+			</p>
+		)
+	}
+	<div class:list={['cartoes', { completa }]}>
+		{
+			lista.map((p) => (
+				<article class="cartao-pl" id={p.id} data-playlist={p.id}>
+					<div class="player">
+						<button type="button" class="capa-botao" aria-label={`Tocar ${p.titulo} aqui`}>
+							<img src={`/playlists/${p.id}.jpg`} alt="" width="640" height="640" loading="lazy" />
+							<span class="play" aria-hidden="true">
+								<svg viewBox="0 0 24 24" width="22" height="22"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+							</span>
+						</button>
+					</div>
+					<div class="texto">
+						<p class="rotulo-pl">{p.ambiente}</p>
+						<h3>{p.titulo}</h3>
+						<p class="chamada">{p.texto}</p>
+						<p class="artistas">Com {p.artistas.join(', ')}</p>
+						<a class="botao" href={p.url} rel="noopener" target="_blank">Seguir no Spotify</a>
+					</div>
+				</article>
+			))
+		}
+	</div>
+	{
+		outras.length > 0 && (
+			<nav class="outras" aria-label="Outras playlists">
+				{outras.map((p) => (
+					<a href={`/playlists/#${p.id}`}>
+						<img src={`/playlists/${p.id}.jpg`} alt="" width="640" height="640" loading="lazy" />
+						<span>{p.curto}</span>
+					</a>
+				))}
+				<a class="todas" href="/playlists/">Todas as playlists →</a>
+			</nav>
+		)
+	}
+</section>
+
+<script>
+	// o player do Spotify entra no lugar da capa só quando a pessoa clica
+	document.querySelectorAll<HTMLElement>('.cartao-pl[data-playlist]').forEach((c) => {
+		const b = c.querySelector<HTMLButtonElement>('.capa-botao');
+		if (!b) return;
+		b.addEventListener('click', () => {
+			const f = document.createElement('iframe');
+			f.src = `https://open.spotify.com/embed/playlist/${encodeURIComponent(c.dataset.playlist ?? '')}?utm_source=generator`;
+			f.title = 'Playlist no Spotify';
+			f.loading = 'lazy';
+			f.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+			b.parentElement?.replaceChildren(f);
+		});
+	});
+</script>
+
+<style>
+	.lead {
+		max-width: var(--leitura);
+		margin: 0 0 26px;
+		font-family: var(--f-corpo);
+		font-size: 17px;
+		line-height: 1.65;
+		color: var(--mute);
+	}
+	.cartoes {
+		display: grid;
+		gap: 24px;
+	}
+	.cartao-pl {
+		display: grid;
+		grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+		gap: 28px 36px;
+		align-items: center;
+		padding: 26px;
+		border: 1px solid var(--linha);
+		border-radius: var(--raio);
+		background:
+			var(--grao-img),
+			radial-gradient(70% 100% at 0% 0%, color-mix(in srgb, var(--acento) 14%, transparent), transparent 70%),
+			var(--elevado);
+		background-size: 220px 220px, auto, auto;
+		scroll-margin-top: 120px;
+	}
+	.player {
+		aspect-ratio: 1;
+		width: 100%;
+	}
+	.player iframe {
+		display: block;
+		width: 100%;
+		height: 100%;
+		min-height: 352px;
+		border: 0;
+		border-radius: 12px;
+	}
+	.capa-botao {
+		position: relative;
+		display: block;
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		border: 0;
+		border-radius: 12px;
+		overflow: hidden;
+		cursor: pointer;
+		background: var(--bg-2);
+	}
+	.capa-botao img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.6s;
+	}
+	.capa-botao:hover img,
+	.capa-botao:focus-visible img {
+		transform: scale(1.03);
+	}
+	.play {
+		position: absolute;
+		right: 14px;
+		bottom: 14px;
+		width: 56px;
+		height: 56px;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		background: var(--botao);
+		color: var(--botao-texto);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+	}
+	.texto {
+		display: grid;
+		gap: 10px;
+		justify-items: start;
+		min-width: 0;
+	}
+	.rotulo-pl {
+		margin: 0;
+		font-family: var(--f-ui);
+		font-size: 11.5px;
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--acento-texto);
+	}
+	.texto h3 {
+		margin: 0;
+		font-family: var(--f-titulo);
+		font-weight: 800;
+		font-size: 26px;
+		line-height: 1.15;
+		letter-spacing: -0.01em;
+	}
+	.chamada {
+		margin: 0;
+		font-family: var(--f-corpo);
+		font-size: 16px;
+		line-height: 1.6;
+		color: var(--mute);
+	}
+	.artistas {
+		margin: 0;
+		font-family: var(--f-ui);
+		font-size: 12.5px;
+		color: var(--mute-2);
+	}
+	.texto .botao {
+		margin-top: 6px;
+	}
+	.outras {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px 14px;
+		margin-top: 18px;
+	}
+	.outras a {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		padding: 6px 14px 6px 6px;
+		border: 1px solid var(--linha);
+		border-radius: 999px;
+		background: var(--elevado);
+		font-family: var(--f-ui);
+		font-size: 12.5px;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		color: var(--tinta);
+		text-decoration: none;
+		transition: border-color 0.2s;
+	}
+	.outras a:hover {
+		border-color: var(--acento);
+	}
+	.outras img {
+		width: 30px;
+		height: 30px;
+		border-radius: 50%;
+		object-fit: cover;
+	}
+	.outras .todas {
+		padding: 6px 14px;
+		border: 0;
+		background: none;
+		color: var(--acento-texto);
+	}
+	@media (max-width: 720px) {
+		.cartao-pl {
+			grid-template-columns: 1fr;
+			padding: 18px;
+		}
+	}
+</style>

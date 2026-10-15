@@ -1,0 +1,81 @@
+---
+// Página das playlists para ambientes (pedido do Luciano em 15/10/2026). Ver components/SugestaoPlaylist.astro.
+import Base from '../../layouts/Base.astro';
+import SugestaoPlaylist from '../../components/SugestaoPlaylist.astro';
+import InscricaoSubstack from '../../components/InscricaoSubstack.astro';
+import playlists from '../../data/playlists.json';
+
+const titulo = 'Playlists para restaurante, loja, bar e outros espaços';
+const descricao =
+	'As playlists públicas da Solenia Records no Spotify para música ambiente de restaurante, loja, bar, cafeteria, academia, barbearia e escritório, com música brasileira independente. Atualizadas todo dia.';
+const jsonld = {
+	'@context': 'https://schema.org',
+	'@type': 'ItemList',
+	name: 'Playlists da Solenia Records para ambientes',
+	itemListElement: playlists.map((p, i) => ({
+		'@type': 'ListItem',
+		position: i + 1,
+		item: { '@type': 'MusicPlaylist', name: p.titulo, description: p.chamada, url: p.url, numTracks: 60, provider: { '@type': 'Organization', name: 'Solenia Records' } },
+	})),
+};
+---
+
+<Base titulo={titulo} descricao={descricao} jsonld={jsonld}>
+	<div class="wrap">
+		<header class="cab">
+			<p class="sobre">Sugestão de playlist</p>
+			<h1>Som para o seu espaço</h1>
+			<p class="lead">
+				Toda loja, bar ou consultório já é uma sala de concerto involuntária. A socióloga Tia DeNora, em <em>Music in Everyday Life</em>,
+				descreve a música de fundo como um dispositivo que regula o humor e o ritmo de quem ocupa o lugar; Theodor Adorno, bem antes,
+				desconfiava do som ambiente justamente por isso. A Solenia Records resolveu entrar nessa disputa com música brasileira
+				independente: sete playlists públicas no Spotify, uma por tipo de espaço, com os artistas do selo no meio e faixas novas todo dia.
+			</p>
+		</header>
+		<SugestaoPlaylist completa />
+		<p class="nota">
+			Som ambiente em estabelecimento comercial pode exigir licença do Ecad. As playlists são públicas e gratuitas; a licença é por conta
+			do estabelecimento. Quer uma playlist feita para o seu negócio? Fale com a <a href="https://soleniarecords.online/playlists/" rel="noopener">Solenia Records</a>.
+		</p>
+		<InscricaoSubstack />
+	</div>
+</Base>
+
+<style>
+	.cab {
+		max-width: var(--leitura);
+		margin: 40px 0 28px;
+	}
+	.sobre {
+		margin: 0 0 10px;
+		font-family: var(--f-ui);
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--acento-texto);
+	}
+	h1 {
+		margin: 0 0 18px;
+		font-family: var(--f-titulo);
+		font-weight: 800;
+		font-size: clamp(34px, 5vw, 52px);
+		line-height: 1.05;
+		letter-spacing: -0.015em;
+	}
+	.lead {
+		margin: 0;
+		font-family: var(--f-corpo);
+		font-size: 17px;
+		line-height: 1.7;
+		color: var(--mute);
+	}
+	.nota {
+		max-width: var(--leitura);
+		margin: 28px 0 0;
+		font-family: var(--f-ui);
+		font-size: 13px;
+		line-height: 1.6;
+		color: var(--mute-2);
+	}
+</style>
