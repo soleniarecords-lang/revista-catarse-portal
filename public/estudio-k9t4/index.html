@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="escuro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive, noimageindex">
+<meta name="googlebot" content="noindex, nofollow">
+<title>Tier List Catarse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Libre+Baskerville:ital@0;1&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050706; --elevado:rgba(12,18,16,.78); --linha:#1a2420; --tinta:#eef5f1; --mute:#a3b3ab;
+  --acento:#0d9488; --acento-texto:#3ac7b6; --brilho1:rgba(13,148,136,.30); --brilho2:rgba(134,239,172,.10);
+  --grao:url(grao-escuro.png); --grao-op:.55;
+  --f-titulo:"Playfair Display",Georgia,serif; --f-corpo:"Libre Baskerville",Georgia,serif; --f-ui:Inter,system-ui,sans-serif;
+  --item:128px; --s:1;
+}
+:root[data-tema="claro"]{
+  --bg:#fbfcfb; --elevado:rgba(255,255,255,.82); --linha:#dbe5df; --tinta:#0e1512; --mute:#55625b;
+  --acento-texto:#0b7d72; --brilho1:rgba(13,148,136,.16); --brilho2:rgba(134,239,172,.22);
+  --grao:url(grao-claro.png); --grao-op:.7;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tinta);font-family:var(--f-ui);overflow:hidden}
+button,select,input{font:inherit}
+
+/* barra de ferramentas (some no modo gravação) */
+#barra{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;
+  padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--linha);font-size:13px}
+#barra .grupo{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#barra button,#barra select{background:transparent;color:var(--tinta);border:1px solid var(--linha);border-radius:8px;padding:6px 10px;cursor:pointer}
+#barra button:hover{border-color:var(--acento-texto)}
+#barra button.forte{background:var(--acento);border-color:var(--acento);color:#fff;font-weight:700}
+#barra button.fraco{color:var(--mute)}
+#barra select{max-width:240px;background:var(--bg)}
+#barra .ctl{display:flex;gap:6px;align-items:center;color:var(--mute)}
+#barra input[type=range]{width:110px;accent-color:var(--acento)}
+#barra input[type=checkbox]{accent-color:var(--acento)}
+body.gravando #barra{display:none}
+
+/* palco 16:9 escalado para caber na janela */
+#moldura{position:fixed;left:0;right:0;bottom:0;top:56px;display:grid;place-items:center;overflow:hidden}
+#escala{width:calc(1920px * var(--s));height:calc(1080px * var(--s));position:relative}
+#palco{position:absolute;left:0;top:0;width:1920px;height:1080px;transform:scale(var(--s));transform-origin:0 0;overflow:hidden;
+  display:flex;flex-direction:column;gap:18px;padding:44px 64px 40px;
+  background:radial-gradient(1300px 760px at 88% -12%,var(--brilho1),transparent 62%),
+             radial-gradient(1000px 640px at -8% 112%,var(--brilho2),transparent 62%),var(--bg)}
+#palco::after{content:"";position:absolute;inset:0;background-image:var(--grao);opacity:var(--grao-op);pointer-events:none;z-index:40}
+body.soltando #palco{outline:4px dashed var(--acento-texto);outline-offset:-14px}
+
+/* cabeçalho */
+#topo{flex:none;height:112px;display:flex;align-items:center;gap:36px}
+#logo{height:84px;width:auto;display:block}
+.titulos{border-left:1px solid var(--linha);padding-left:36px;min-width:0;flex:1}
+#titulo{font:italic 900 64px/1.05 var(--f-titulo);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;outline:none}
+#subtitulo{margin-top:10px;font:700 17px/1 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:var(--acento-texto);outline:none}
+.site{flex:none;font:600 15px/1 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:var(--mute)}
+[contenteditable]:focus{outline:2px dashed var(--acento-texto);outline-offset:6px;border-radius:4px}
+body.gravando [contenteditable]:focus{outline:none}
+
+/* linhas */
+#tiers{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+.linha{flex:1;min-height:0;display:flex;background:var(--elevado);border:1px solid var(--linha);border-radius:16px;overflow:hidden}
+.rotulo{flex:none;width:var(--rot,150px);position:relative;display:grid;place-items:center;background:var(--cor);color:#050706}
+.rot-in{display:flex;flex-direction:column;align-items:center;gap:5px;padding:0 10px}
+.rotulo .nome{max-width:calc(var(--rot,150px) - 20px);text-align:center;font-family:var(--f-titulo);font-weight:900;line-height:1.05;overflow-wrap:break-word;outline:none;padding:2px}
+.rotulo .lim{font:700 10px/1 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;opacity:.62;padding:3px 7px;border-radius:99px;transition:all .2s}
+.linha.estourou .rotulo .lim{opacity:1;background:#050706;color:#fff}
+.linha.estourou{border-color:var(--acento-texto)}
+.linha.especial{border:2px dashed var(--acento-texto)}
+.rotulo .ctrl{position:absolute;left:0;right:0;bottom:6px;display:flex;justify-content:center;gap:4px;opacity:0;transition:opacity .15s}
+.rotulo:hover .ctrl{opacity:1}
+.ctrl button{width:28px;height:26px;border:0;border-radius:6px;background:rgba(5,7,6,.78);color:#fff;cursor:pointer;font-size:13px;line-height:26px;padding:0}
+body.gravando .ctrl{display:none}
+.zona{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-content:center;gap:10px;padding:8px 14px;overflow:hidden}
+
+/* fila de itens a classificar */
+#fila-caixa{flex:none;display:flex;flex-direction:column;gap:8px}
+.fila-rotulo{font:700 14px/1 var(--f-ui);letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
+#fila{flex-wrap:wrap;align-content:flex-start;overflow-y:auto;min-height:calc(var(--item) + 16px);max-height:calc(var(--item) * 2 + 26px);
+  background:var(--elevado);border:1px dashed var(--linha);border-radius:16px;scrollbar-width:none}
+#fila::-webkit-scrollbar{display:none}
+#fila:empty::before{content:"Arraste imagens para cá, cole com Ctrl+V ou use ＋ Imagens";align-self:center;color:var(--mute);font:italic 400 18px/1 var(--f-corpo)}
+body.gravando #fila:empty::before{content:""}
+
+/* itens */
+.item{flex:none;width:var(--item);height:var(--item);position:relative;border-radius:12px;overflow:hidden;cursor:grab;user-select:none;
+  touch-action:none;background:#111;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.item img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.item .legenda{position:absolute;left:0;right:0;bottom:0;padding:18px 8px 7px;text-align:center;color:#fff;
+  font:600 13px/1.2 var(--f-ui);background:linear-gradient(transparent,rgba(0,0,0,.82))}
+.item .legenda:empty{display:none}
+.sem-legenda .item:not(.texto) .legenda{display:none}
+.item.texto{display:grid;place-items:center;width:auto;min-width:var(--item);max-width:calc(var(--item) * 3);padding:6px 16px;background:linear-gradient(140deg,#0d9488,#064e47)}
+.item.texto .legenda{position:static;background:none;padding:0;font:italic 700 calc(var(--item) * .24)/1.1 var(--f-titulo);overflow-wrap:break-word}
+.item .x{position:absolute;top:5px;right:5px;width:24px;height:24px;border:0;border-radius:50%;background:rgba(0,0,0,.72);color:#fff;
+  font-size:12px;line-height:24px;padding:0;cursor:pointer;display:none}
+.item:hover .x{display:block}
+body.gravando .item .x,body.arrastando-algo .item .x{display:none!important}
+.item.arrastando{opacity:.22}
+.fantasma{position:absolute;z-index:60;pointer-events:none;margin:0;transform:rotate(3deg) scale(1.08);box-shadow:0 26px 60px rgba(0,0,0,.6)}
+body.arrastando-algo,body.arrastando-algo *{cursor:grabbing!important}
+@keyframes pousar{0%{transform:scale(1.12)}60%{transform:scale(.96)}100%{transform:scale(1)}}
+.pousou{animation:pousar .28s ease-out}
+
+/* destaque de um item */
+#foco{position:absolute;inset:0;z-index:50;display:grid;place-items:center;background:rgba(5,7,6,.84);backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity .2s}
+:root[data-tema="claro"] #foco{background:rgba(251,252,251,.86)}
+#foco.aberto{opacity:1;pointer-events:auto}
+.cartao{display:flex;flex-direction:column;align-items:center;gap:26px;transform:scale(.94);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+#foco.aberto .cartao{transform:none}
+.cartao .midia img{max-width:900px;max-height:640px;border-radius:20px;display:block;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+.cartao.texto .midia{display:none}
+.cartao .leg{max-width:1300px;text-align:center;font:italic 900 52px/1.15 var(--f-titulo);outline:none;min-width:200px}
+.cartao.texto .leg{font-size:96px}
+.cartao .acoes{display:flex;gap:10px}
+.cartao .acoes button{font:600 15px var(--f-ui);padding:10px 18px;border-radius:10px;border:1px solid var(--linha);background:var(--elevado);color:var(--tinta);cursor:pointer}
+body.gravando .cartao .acoes{display:none}
+
+#dica,#aviso{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:200;padding:10px 16px;border-radius:10px;
+  background:rgba(5,7,6,.85);color:#eef5f1;font:600 13px var(--f-ui);opacity:0;transition:opacity .3s;pointer-events:none}
+#dica.ver,#aviso.ver{opacity:1}
+</style>
+</head>
+<body>
+<div id="barra">
+  <div class="grupo">
+    <select id="sel-lista" title="Escolher programa"></select>
+    <button id="b-nova">Nova lista</button>
+    <button id="b-apagar" class="fraco">Apagar lista</button>
+  </div>
+  <div class="grupo">
+    <button id="b-imagens">＋ Imagens</button>
+    <button id="b-texto">＋ Texto</button>
+    <button id="b-linha">＋ Linha</button>
+  </div>
+  <div class="grupo">
+    <label class="ctl">Tamanho <input id="r-tam" type="range" min="80" max="200" step="4"></label>
+    <label class="ctl"><input id="c-leg" type="checkbox"> Legendas</label>
+    <button id="b-embaralhar">Embaralhar fila</button>
+    <button id="b-recomecar">Recomeçar</button>
+  </div>
+  <div class="grupo">
+    <button id="b-exportar" class="fraco">Exportar</button>
+    <button id="b-importar" class="fraco">Importar</button>
+    <button id="b-tema" class="fraco">Claro/Escuro</button>
+    <button id="b-gravar" class="forte">● Modo gravação (G)</button>
+  </div>
+  <input id="f-imagens" type="file" accept="image/*" multiple hidden>
+  <input id="f-importar" type="file" accept="application/json,.json" hidden>
+</div>
+
+<div id="moldura"><div id="escala"><div id="palco">
+  <header id="topo">
+    <img id="logo" src="logo-catarse-texto-branco.png" alt="Revista Catarse">
+    <div class="titulos">
+      <div id="titulo" contenteditable="true" spellcheck="false"></div>
+      <div id="subtitulo" contenteditable="true" spellcheck="false"></div>
+    </div>
+    <div class="site">revistacatarse.com.br</div>
+  </header>
+  <main id="tiers"></main>
+  <section id="fila-caixa">
+    <div class="fila-rotulo">Para classificar</div>
+    <div class="zona" id="fila" data-tier="fila"></div>
+  </section>
+  <div id="foco">
+    <div class="cartao">
+      <div class="midia"></div>
+      <div class="leg" contenteditable="true" spellcheck="false"></div>
+      <div class="acoes"><button id="b-foco-excluir">Excluir item</button><button id="b-foco-fechar">Fechar (Esc)</button></div>
+    </div>
+  </div>
+</div></div></div>
+<div id="dica">Aperte G para sair do modo gravação</div>
+<div id="aviso"></div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const palco = $('#palco'), tiersEl = $('#tiers'), filaEl = $('#fila');
+const CORES = ['#5eead4','#86efac','#bef264','#d9f99d','#a7f3d0','#cbd5c0','#99f6e4','#a3b3ab'];
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+let db = null, listas = [], lista = null, escala = 1, focoId = null, drag = null;
+
+/* programas prontos do Radio Show (faixas e categorias dos roteiros em radio-show/) */
+const CATEGORIAS = especial => [
+  { nome: 'Melhor música do mundo', cor: '#5eead4', limite: 1 },
+  { nome: 'Boa música', cor: '#86efac' },
+  { nome: 'Ok', cor: '#bef264' },
+  { nome: 'Pra preencher', cor: '#d9f99d' },
+  { nome: 'Música de corno', cor: '#a3b3ab', limite: 1 },
+  { nome: especial, cor: '#99f6e4', limite: 1, especial: true }];
+const PROGRAMAS = [
+  { id: 'radio-show-black-parade', titulo: 'The Black Parade', subtitulo: 'Radio Show Catarse · My Chemical Romance, 2006',
+    categorias: CATEGORIAS('A que eu cantava trancado no quarto'),
+    faixas: ['The End.', 'Dead!', 'This Is How I Disappear', 'The Sharpest Lives', 'Welcome to the Black Parade', "I Don't Love You",
+      'House of Wolves', 'Cancer', 'Mama', 'Sleep', 'Teenagers', 'Disenchanted', 'Famous Last Words', 'Blood'] },
+  { id: 'radio-show-night-visions', titulo: 'Night Visions', subtitulo: 'Radio Show Catarse · Imagine Dragons, 2012',
+    categorias: CATEGORIAS('Juro que não gosto, mas sei cantar'),
+    faixas: ['Radioactive', 'Tiptoe', "It's Time", 'Demons', 'On Top of the World', 'Amsterdam', 'Hear Me', 'Every Night',
+      'Bleeding Out', 'Underdog', 'Nothing Left to Say / Rocks'] }];
+function programa(p) {
+  const l = { id: p.id, titulo: p.titulo, subtitulo: p.subtitulo, tamanho: 72, legendas: true, itens: {}, ordem: { fila: [] }, atualizado: Date.now(),
+    tiers: p.categorias.map((c, i) => ({ id: p.id + '-c' + i, ...c })) };
+  p.faixas.forEach((f, i) => { const id = p.id + '-f' + (i + 1); l.itens[id] = { texto: f }; l.ordem.fila.push(id); });
+  return normalizar(l);
+}
+const removidos = () => { try { return JSON.parse(pref('catarse-tier-removidos') || '[]'); } catch (e) { return []; } };
+
+const el = (tag, cls) => { const e = document.createElement(tag); if (cls) e.className = cls; return e; };
+const botao = (txt, titulo, fn) => { const b = el('button'); b.textContent = txt; b.title = titulo;
+  b.addEventListener('pointerdown', e => e.stopPropagation()); b.addEventListener('click', e => { e.stopPropagation(); fn(); }); return b; };
+function pref(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+let tAviso; function aviso(msg) { const a = $('#aviso'); a.textContent = msg; a.classList.add('ver'); clearTimeout(tAviso); tAviso = setTimeout(() => a.classList.remove('ver'), 3500); }
+
+/* banco local (IndexedDB): as listas ficam só neste navegador */
+function abrirDB() { return new Promise((ok, erro) => { try { const r = indexedDB.open('catarse-tierlist', 1);
+  r.onupgradeneeded = () => r.result.createObjectStore('listas', { keyPath: 'id' });
+  r.onsuccess = () => ok(r.result); r.onerror = () => erro(r.error); } catch (e) { erro(e); } }); }
+const loja = modo => db.transaction('listas', modo).objectStore('listas');
+const req = r => new Promise((ok, erro) => { r.onsuccess = () => ok(r.result); r.onerror = () => erro(r.error); });
+let tSalvar;
+function salvar() { clearTimeout(tSalvar); tSalvar = setTimeout(async () => { lista.atualizado = Date.now();
+  if (db) { try { await req(loja('readwrite').put(lista)); } catch (e) { aviso('Não consegui salvar neste navegador. Use Exportar para guardar a lista.'); } }
+  atualizarSelect(); }, 250); }
+
+function novaLista() { return normalizar({ id: uid(), titulo: 'Título do programa', subtitulo: 'Tier list · Revista Catarse', tamanho: 128, legendas: true,
+  tiers: ['S','A','B','C','D'].map((n, i) => ({ id: uid(), nome: n, cor: CORES[i] })), itens: {}, ordem: { fila: [] }, atualizado: Date.now() }); }
+function normalizar(l) {
+  l.itens = l.itens || {}; l.tiers = l.tiers || []; l.ordem = l.ordem || {}; l.ordem.fila = l.ordem.fila || [];
+  for (const t of l.tiers) l.ordem[t.id] = l.ordem[t.id] || [];
+  for (const k of Object.keys(l.ordem)) if (k !== 'fila' && !l.tiers.some(t => t.id === k)) { l.ordem.fila.push(...l.ordem[k]); delete l.ordem[k]; }
+  const vistos = new Set();
+  for (const k of Object.keys(l.ordem)) l.ordem[k] = l.ordem[k].filter(id => l.itens[id] && !vistos.has(id) && vistos.add(id));
+  for (const id of Object.keys(l.itens)) if (!vistos.has(id)) l.ordem.fila.push(id);
+  if (!l.tamanho) l.tamanho = 128; if (l.legendas === undefined) l.legendas = true;
+  return l;
+}
+
+/* desenho */
+function ajustarFonte(n) { const t = n.textContent.length, longo = lista.tiers.some(x => (x.nome || '').length > 4);
+  n.style.fontSize = (t <= 2 ? (longo ? 34 : 60) : t <= 4 ? (longo ? 30 : 40) : t <= 8 ? 30 : t <= 14 ? 26 : t <= 24 ? 22 : 19) + 'px'; }
+function larguraRotulo() { tiersEl.style.setProperty('--rot', lista.tiers.some(t => (t.nome || '').length > 4) ? '250px' : '150px'); }
+function marcarLimites() { for (const ln of tiersEl.querySelectorAll('.linha[data-limite]'))
+  ln.classList.toggle('estourou', ln.querySelectorAll('.zona .item:not(.fantasma)').length > +ln.dataset.limite); }
+function render() {
+  larguraRotulo();
+  document.documentElement.style.setProperty('--item', lista.tamanho + 'px');
+  document.body.classList.toggle('sem-legenda', !lista.legendas);
+  $('#r-tam').value = lista.tamanho; $('#c-leg').checked = lista.legendas;
+  if (document.activeElement !== $('#titulo')) $('#titulo').textContent = lista.titulo;
+  if (document.activeElement !== $('#subtitulo')) $('#subtitulo').textContent = lista.subtitulo;
+  tiersEl.replaceChildren(...lista.tiers.map(linhaEl));
+  filaEl.replaceChildren(...lista.ordem.fila.map(itemEl));
+  marcarLimites();
+}
+function linhaEl(t, i) {
+  const linha = el('div', 'linha' + (t.especial ? ' especial' : '')), rot = el('div', 'rotulo'), nome = el('div', 'nome'), dentro = el('div', 'rot-in');
+  if (t.limite) linha.dataset.limite = t.limite;
+  rot.style.setProperty('--cor', t.cor);
+  nome.contentEditable = 'true'; nome.spellcheck = false; nome.textContent = t.nome; ajustarFonte(nome);
+  nome.addEventListener('input', () => { t.nome = nome.textContent.trim(); ajustarFonte(nome); larguraRotulo(); salvar(); });
+  dentro.append(nome);
+  if (t.limite || t.especial) { const lim = el('div', 'lim');
+    lim.textContent = [t.especial ? 'especial' : '', t.limite ? (t.limite === 1 ? 'só uma' : 'até ' + t.limite) : ''].filter(Boolean).join(' · ');
+    dentro.append(lim); }
+  nome.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); nome.blur(); } });
+  const ctrl = el('div', 'ctrl');
+  ctrl.append(
+    botao('◐', 'Trocar cor', () => { t.cor = CORES[(CORES.indexOf(t.cor) + 1) % CORES.length]; render(); salvar(); }),
+    botao('↑', 'Subir linha', () => moverLinha(i, -1)),
+    botao('↓', 'Descer linha', () => moverLinha(i, 1)),
+    botao('✕', 'Remover linha (os itens voltam para a fila)', () => removerLinha(i)));
+  rot.append(dentro, ctrl);
+  const zona = el('div', 'zona'); zona.dataset.tier = t.id; zona.append(...lista.ordem[t.id].map(itemEl));
+  linha.append(rot, zona); return linha;
+}
+function itemEl(id) {
+  const d = lista.itens[id], it = el('div', 'item' + (d.img ? '' : ' texto')); it.dataset.id = id;
+  if (d.img) { const img = new Image(); img.src = d.img; img.alt = d.texto || ''; img.draggable = false; it.append(img); }
+  const leg = el('div', 'legenda'); leg.textContent = d.texto || ''; it.append(leg);
+  const x = el('button', 'x'); x.textContent = '✕'; x.title = 'Excluir item';
+  x.addEventListener('pointerdown', e => e.stopPropagation()); x.addEventListener('click', e => { e.stopPropagation(); excluirItem(id); });
+  it.append(x); return it;
+}
+function lerOrdem() { for (const z of palco.querySelectorAll('.zona')) lista.ordem[z.dataset.tier] = [...z.querySelectorAll('.item')].map(i => i.dataset.id); }
+
+/* linhas e itens */
+function moverLinha(i, d) { const j = i + d; if (j < 0 || j >= lista.tiers.length) return;
+  const t = lista.tiers; [t[i], t[j]] = [t[j], t[i]]; render(); salvar(); }
+function removerLinha(i) { const t = lista.tiers[i]; lista.ordem.fila.push(...lista.ordem[t.id]); delete lista.ordem[t.id];
+  lista.tiers.splice(i, 1); render(); salvar(); }
+function excluirItem(id) { delete lista.itens[id]; for (const k in lista.ordem) lista.ordem[k] = lista.ordem[k].filter(x => x !== id); render(); salvar(); }
+function nomeLimpo(n) { const b = n.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const digitos = (b.match(/\d/g) || []).length;
+  return (/^(img|dsc|pxl|screenshot|captura|whatsapp|image|imagem)\b/i.test(b) || digitos > b.length / 3) ? '' : b; }
+function reduzir(f) { return new Promise((ok, erro) => { const u = URL.createObjectURL(f), img = new Image();
+  img.onload = () => { const k = Math.min(1, 640 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u); ok(c.toDataURL('image/webp', .9)); };
+  img.onerror = () => { URL.revokeObjectURL(u); erro(new Error('imagem inválida')); }; img.src = u; }); }
+async function adicionarArquivos(files) { let n = 0;
+  for (const f of files) { if (!f.type.startsWith('image/')) continue;
+    try { const id = uid(); lista.itens[id] = { img: await reduzir(f), texto: nomeLimpo(f.name) }; lista.ordem.fila.push(id); n++; } catch (e) {} }
+  if (n) { render(); salvar(); aviso(n + (n > 1 ? ' imagens adicionadas' : ' imagem adicionada')); } else aviso('Nenhuma imagem reconhecida.'); }
+function adicionarUrl(url) { const id = uid(); lista.itens[id] = { img: url, texto: '' }; lista.ordem.fila.push(id); render(); salvar(); aviso('Imagem adicionada pelo link'); }
+
+/* destaque (clique num item) */
+function abrirFoco(id) { focoId = id; const d = lista.itens[id], cartao = $('#foco .cartao'), m = $('#foco .midia');
+  m.replaceChildren(); cartao.classList.toggle('texto', !d.img);
+  if (d.img) { const img = new Image(); img.src = d.img; m.append(img); }
+  $('#foco .leg').textContent = d.texto || ''; $('#foco').classList.add('aberto'); }
+function fecharFoco() { if (!focoId) return; $('#foco').classList.remove('aberto'); focoId = null; document.activeElement.blur?.(); render(); }
+$('#foco .leg').addEventListener('input', e => { if (focoId) { lista.itens[focoId].texto = e.target.textContent.trim(); salvar(); } });
+$('#foco').addEventListener('pointerdown', e => { if (e.target.id === 'foco') fecharFoco(); });
+$('#b-foco-fechar').addEventListener('click', fecharFoco);
+$('#b-foco-excluir').addEventListener('click', () => { const id = focoId; fecharFoco(); excluirItem(id); });
+
+/* arrastar com animação */
+function flip(fn) { const els = [...palco.querySelectorAll('.zona .item:not(.arrastando)')];
+  const antes = new Map(els.map(x => [x, x.getBoundingClientRect()])); fn();
+  for (const x of els) { const a = antes.get(x), r = x.getBoundingClientRect(), dx = (a.left - r.left) / escala, dy = (a.top - r.top) / escala;
+    if (Math.abs(dx) > .5 || Math.abs(dy) > .5) x.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }], { duration: 200, easing: 'cubic-bezier(.2,.8,.2,1)' }); } }
+palco.addEventListener('pointerdown', e => {
+  const it = e.target.closest('.item'); if (!it || e.button !== 0 || it.classList.contains('fantasma')) return;
+  e.preventDefault(); document.activeElement.blur?.(); drag = { el: it, x: e.clientX, y: e.clientY, ativo: false };
+});
+function iniciar(e) { const r = drag.el.getBoundingClientRect(), g = drag.el.cloneNode(true);
+  drag.dx = e.clientX - r.left; drag.dy = e.clientY - r.top; g.classList.add('fantasma'); palco.appendChild(g);
+  drag.g = g; drag.ativo = true; drag.el.classList.add('arrastando'); document.body.classList.add('arrastando-algo'); }
+function posicionar(e) { const p = palco.getBoundingClientRect();
+  drag.g.style.left = (e.clientX - p.left - drag.dx) / escala + 'px'; drag.g.style.top = (e.clientY - p.top - drag.dy) / escala + 'px'; }
+addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (!drag.ativo) { if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return; iniciar(e); }
+  posicionar(e);
+  const alvo = document.elementFromPoint(e.clientX, e.clientY), zona = alvo && alvo.closest('.zona'); if (!zona) return;
+  let antes = null;
+  for (const o of zona.querySelectorAll('.item:not(.arrastando)')) { const r = o.getBoundingClientRect();
+    if (e.clientY < r.top || (e.clientY <= r.bottom && e.clientX < r.left + r.width / 2)) { antes = o; break; } }
+  if (antes) { if (drag.el.nextElementSibling !== antes) flip(() => zona.insertBefore(drag.el, antes)); }
+  else if (zona.lastElementChild !== drag.el) flip(() => zona.appendChild(drag.el));
+  marcarLimites();
+});
+function soltar() {
+  if (!drag) return; const d = drag; drag = null;
+  if (!d.ativo) { abrirFoco(d.el.dataset.id); return; }
+  const r = d.el.getBoundingClientRect(), p = palco.getBoundingClientRect();
+  d.g.style.transition = 'left .16s ease-out, top .16s ease-out, transform .16s ease-out';
+  d.g.style.left = (r.left - p.left) / escala + 'px'; d.g.style.top = (r.top - p.top) / escala + 'px'; d.g.style.transform = 'none';
+  setTimeout(() => { d.g.remove(); d.el.classList.remove('arrastando'); d.el.classList.add('pousou');
+    setTimeout(() => d.el.classList.remove('pousou'), 300); document.body.classList.remove('arrastando-algo'); }, 160);
+  lerOrdem(); salvar();
+}
+addEventListener('pointerup', soltar); addEventListener('pointercancel', soltar);
+
+/* título e subtítulo */
+for (const [sel, campo] of [['#titulo', 'titulo'], ['#subtitulo', 'subtitulo']]) {
+  $(sel).addEventListener('input', e => { lista[campo] = e.target.textContent.trim(); salvar(); });
+  $(sel).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+}
+
+/* barra */
+function atualizarSelect() { const s = $('#sel-lista');
+  s.replaceChildren(...listas.map(l => { const o = el('option'); o.value = l.id; o.textContent = l.titulo || 'Sem título'; o.selected = l === lista; return o; })); }
+$('#sel-lista').addEventListener('change', e => { lista = listas.find(l => l.id === e.target.value); pref('catarse-tier-ultima', lista.id); render(); });
+$('#b-nova').addEventListener('click', () => { lista = novaLista(); listas.push(lista); pref('catarse-tier-ultima', lista.id); render(); salvar(); setTimeout(() => $('#titulo').focus(), 50); });
+$('#b-apagar').addEventListener('click', async () => {
+  if (!confirm('Apagar a lista "' + (lista.titulo || 'Sem título') + '"? Isso não tem volta. Se quiser guardar, use Exportar antes.')) return;
+  if (db) { try { await req(loja('readwrite').delete(lista.id)); } catch (e) {} }
+  if (PROGRAMAS.some(p => p.id === lista.id)) pref('catarse-tier-removidos', JSON.stringify([...removidos(), lista.id]));
+  listas = listas.filter(l => l !== lista); if (!listas.length) listas.push(novaLista());
+  lista = listas[0]; render(); salvar(); });
+$('#b-imagens').addEventListener('click', () => $('#f-imagens').click());
+$('#f-imagens').addEventListener('change', e => { adicionarArquivos([...e.target.files]); e.target.value = ''; });
+$('#b-texto').addEventListener('click', () => { const id = uid(); lista.itens[id] = { texto: 'Novo item' }; lista.ordem.fila.push(id); render(); salvar(); abrirFoco(id);
+  setTimeout(() => { const l = $('#foco .leg'); l.focus(); document.getSelection().selectAllChildren(l); }, 60); });
+$('#b-linha').addEventListener('click', () => { const t = { id: uid(), nome: '?', cor: CORES[lista.tiers.length % CORES.length] };
+  lista.tiers.push(t); lista.ordem[t.id] = []; render(); salvar(); });
+$('#r-tam').addEventListener('input', e => { lista.tamanho = +e.target.value; document.documentElement.style.setProperty('--item', lista.tamanho + 'px'); salvar(); });
+$('#c-leg').addEventListener('change', e => { lista.legendas = e.target.checked; render(); salvar(); });
+$('#b-embaralhar').addEventListener('click', () => { const f = lista.ordem.fila;
+  for (let i = f.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [f[i], f[j]] = [f[j], f[i]]; } render(); salvar(); });
+$('#b-recomecar').addEventListener('click', () => { if (!confirm('Mandar todos os itens de volta para "Para classificar"?')) return;
+  const todos = [...lista.tiers.flatMap(t => lista.ordem[t.id]), ...lista.ordem.fila];
+  for (const t of lista.tiers) lista.ordem[t.id] = []; lista.ordem.fila = todos; render(); salvar(); });
+$('#b-exportar').addEventListener('click', () => {
+  const nome = (lista.titulo || 'tier-list').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'tier-list';
+  const a = el('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(lista)], { type: 'application/json' }));
+  a.download = nome + '.json'; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); });
+$('#b-importar').addEventListener('click', () => $('#f-importar').click());
+$('#f-importar').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try { const l = JSON.parse(await f.text()); if (!Array.isArray(l.tiers) || typeof l.itens !== 'object') throw 0;
+    l.id = uid(); lista = normalizar(l); listas.push(lista); render(); salvar(); aviso('Lista importada'); }
+  catch (err) { aviso('Esse arquivo não é uma tier list exportada daqui.'); } });
+function tema(t) { document.documentElement.dataset.tema = t; $('#logo').src = t === 'claro' ? 'logo-catarse-texto-preto.png' : 'logo-catarse-texto-branco.png'; pref('catarse-tier-tema', t); }
+$('#b-tema').addEventListener('click', () => tema(document.documentElement.dataset.tema === 'claro' ? 'escuro' : 'claro'));
+
+/* modo gravação: esconde a barra, tela cheia, palco ocupa a tela */
+let tDica;
+function gravacao(on) {
+  document.body.classList.toggle('gravando', on); document.activeElement.blur?.();
+  if (on) { if (!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+    const d = $('#dica'); d.classList.add('ver'); clearTimeout(tDica); tDica = setTimeout(() => d.classList.remove('ver'), 2200); }
+  else if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  ajustar();
+}
+$('#b-gravar').addEventListener('click', () => gravacao(true));
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && document.body.classList.contains('gravando')) gravacao(false); else ajustar(); });
+addEventListener('keydown', e => {
+  if (e.key === 'Escape' && focoId) { fecharFoco(); return; }
+  const editando = e.target.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName);
+  if (!editando && (e.key === 'g' || e.key === 'G')) { e.preventDefault(); gravacao(!document.body.classList.contains('gravando')); }
+});
+function ajustar() { const grav = document.body.classList.contains('gravando'), topo = grav ? 0 : $('#barra').offsetHeight;
+  $('#moldura').style.top = topo + 'px'; escala = Math.min(innerWidth / 1920, (innerHeight - topo) / 1080);
+  document.documentElement.style.setProperty('--s', escala); }
+addEventListener('resize', ajustar);
+
+/* colar e soltar arquivos */
+document.addEventListener('paste', e => {
+  if (e.target.isContentEditable) { e.preventDefault(); document.execCommand('insertText', false, e.clipboardData.getData('text/plain')); return; }
+  const fs = [...e.clipboardData.files]; if (fs.length) { e.preventDefault(); adicionarArquivos(fs); } });
+addEventListener('dragover', e => { const t = [...e.dataTransfer.types]; if (t.includes('Files') || t.includes('text/uri-list') || t.includes('text/html')) { e.preventDefault(); document.body.classList.add('soltando'); } });
+addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('soltando'); });
+addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('soltando');
+  const fs = [...e.dataTransfer.files]; if (fs.length) return adicionarArquivos(fs);
+  const html = e.dataTransfer.getData('text/html'), m = html && html.match(/<img[^>]+src="([^"]+)"/i);
+  const url = m ? m[1].replace(/&amp;/g, '&') : (e.dataTransfer.getData('text/uri-list') || '').split('\n').find(l => l && !l.startsWith('#'));
+  if (url && /^(https?:|data:image)/.test(url.trim())) adicionarUrl(url.trim()); else aviso('Não reconheci uma imagem aí.'); });
+
+/* início */
+(async () => {
+  try { db = await abrirDB(); listas = await req(loja('readonly').getAll()); }
+  catch (e) { db = null; listas = []; aviso('Este navegador não deixou salvar. Use Exportar para guardar a lista.'); }
+  listas = listas.map(normalizar);
+  const fora = removidos();
+  for (const p of PROGRAMAS) if (!listas.some(l => l.id === p.id) && !fora.includes(p.id)) { const l = programa(p); listas.push(l);
+    if (db) { try { await req(loja('readwrite').put(l)); } catch (e) {} } }
+  if (!listas.length) listas.push(novaLista());
+  const ult = pref('catarse-tier-ultima');
+  lista = listas.find(l => l.id === ult) || [...listas].sort((a, b) => b.atualizado - a.atualizado)[0];
+  tema(pref('catarse-tier-tema') || 'escuro'); render(); atualizarSelect(); ajustar(); salvar();
+})();
+})();
+</script>
+</body>
+</html>
