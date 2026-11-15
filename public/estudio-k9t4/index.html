@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow, noarchive, noimageindex">
 <meta name="googlebot" content="noindex, nofollow">
 <title>Tier List Catarse</title>
+<script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Libre+Baskerville:ital@0;1&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
@@ -123,6 +124,22 @@ body.gravando .cartao .acoes{display:none}
 #dica,#aviso{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:200;padding:10px 16px;border-radius:10px;
   background:rgba(5,7,6,.85);color:#eef5f1;font:600 13px var(--f-ui);opacity:0;transition:opacity .3s;pointer-events:none}
 #dica.ver,#aviso.ver{opacity:1}
+
+/* Spotify: bolinha no item, player no destaque, painel de links */
+.item.sp::after{content:"";position:absolute;left:7px;top:7px;width:11px;height:11px;border-radius:50%;background:#1ed760;box-shadow:0 0 0 2px rgba(0,0,0,.55)}
+.cartao .player{width:760px;display:none}
+.cartao.com-sp .player{display:block}
+.cartao .player iframe{border-radius:14px;display:block}
+.cartao .sp-link{display:flex;gap:10px;align-items:center;font:600 13px var(--f-ui);color:var(--mute)}
+.cartao .sp-link input{width:460px;background:var(--elevado);color:var(--tinta);border:1px solid var(--linha);border-radius:8px;padding:7px 10px;font:13px var(--f-ui)}
+body.gravando .cartao .sp-link{display:none}
+#painel-sp{position:fixed;top:58px;left:16px;z-index:120;background:var(--bg);border:1px solid var(--linha);border-radius:12px;padding:12px;
+  display:none;flex-direction:column;gap:8px;width:440px;font:13px var(--f-ui);color:var(--mute);box-shadow:0 20px 50px rgba(0,0,0,.45)}
+#painel-sp.aberto{display:flex}
+#painel-sp textarea{height:120px;background:var(--elevado);color:var(--tinta);border:1px solid var(--linha);border-radius:8px;padding:8px;font:13px var(--f-ui);resize:vertical}
+#painel-sp .linha-b{display:flex;gap:8px;justify-content:flex-end}
+#painel-sp button{background:transparent;color:var(--tinta);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;cursor:pointer}
+#painel-sp button.forte{background:var(--acento);border-color:var(--acento);color:#fff;font-weight:700}
 </style>
 </head>
 <body>
@@ -135,6 +152,7 @@ body.gravando .cartao .acoes{display:none}
   <div class="grupo">
     <button id="b-imagens">＋ Imagens</button>
     <button id="b-texto">＋ Texto</button>
+    <button id="b-spotify" title="Adicionar músicas por links do Spotify">＋ Spotify</button>
     <button id="b-linha">＋ Linha</button>
   </div>
   <div class="grupo">
@@ -151,6 +169,12 @@ body.gravando .cartao .acoes{display:none}
   </div>
   <input id="f-imagens" type="file" accept="image/*" multiple hidden>
   <input id="f-importar" type="file" accept="application/json,.json" hidden>
+</div>
+
+<div id="painel-sp">
+  <div>Cole links de músicas do Spotify, um por linha. Cada uma vira um item com a capa, e toca ao clicar.</div>
+  <textarea id="sp-links" placeholder="https://open.spotify.com/track/…"></textarea>
+  <div class="linha-b"><button id="b-sp-fechar">Fechar</button><button id="b-sp-add" class="forte">Adicionar</button></div>
 </div>
 
 <div id="moldura"><div id="escala"><div id="palco">
@@ -171,6 +195,8 @@ body.gravando .cartao .acoes{display:none}
     <div class="cartao">
       <div class="midia"></div>
       <div class="leg" contenteditable="true" spellcheck="false"></div>
+      <div class="player"><div id="sp-alvo"></div></div>
+      <label class="sp-link">Spotify <input id="sp-input" placeholder="Cole o link da música (open.spotify.com/track/…)" spellcheck="false"></label>
       <div class="acoes"><button id="b-foco-excluir">Excluir item</button><button id="b-foco-fechar">Fechar (Esc)</button></div>
     </div>
   </div>
@@ -197,16 +223,25 @@ const CATEGORIAS = especial => [
 const PROGRAMAS = [
   { id: 'radio-show-black-parade', titulo: 'The Black Parade', subtitulo: 'Radio Show Catarse · My Chemical Romance, 2006',
     categorias: CATEGORIAS('A que eu cantava trancado no quarto'),
-    faixas: ['The End.', 'Dead!', 'This Is How I Disappear', 'The Sharpest Lives', 'Welcome to the Black Parade', "I Don't Love You",
-      'House of Wolves', 'Cancer', 'Mama', 'Sleep', 'Teenagers', 'Disenchanted', 'Famous Last Words', 'Blood'] },
+    faixas: [['The End.', '6s2yqZbiPNPL1B2IeCMsUA'], ['Dead!', '0uukw2CgEIApv4IWAjXrBC'], ['This Is How I Disappear', '0rUNZQuYQvOz6A6zwyT6tM'],
+      ['The Sharpest Lives', '2kMjk14RmYyYhhSbipoa9U'], ['Welcome to the Black Parade', '5wQnmLuC1W7ATsArWACrgW'], ["I Don't Love You", '4RAOI1etsgbh5NP3T5R8rN'],
+      ['House of Wolves', '7j2Bmzpnf6RwEWEQ2sv8Ho'], ['Cancer', '0GgN4MhR5GKn5IcKN0e0rG'], ['Mama', '0Zh3tKIphLOvQux4dA6PFZ'], ['Sleep', '2pONuBYwWrNm9jcJH6hmPc'],
+      ['Teenagers', '7j31rVgGX9Q2blT92VBEA0'], ['Disenchanted', '6T7MAQCekVb3UnCykjX3BP'], ['Famous Last Words', '2d6m2F4I7wCuAKtSsdhh83'], ['Blood', '1rNSLiEFpAF4amVhkzfTUG']] },
   { id: 'radio-show-night-visions', titulo: 'Night Visions', subtitulo: 'Radio Show Catarse · Imagine Dragons, 2012',
     categorias: CATEGORIAS('Juro que não gosto, mas sei cantar'),
-    faixas: ['Radioactive', 'Tiptoe', "It's Time", 'Demons', 'On Top of the World', 'Amsterdam', 'Hear Me', 'Every Night',
-      'Bleeding Out', 'Underdog', 'Nothing Left to Say / Rocks'] }];
+    faixas: [['Radioactive', '62yJjFtgkhUrXktIoSjgP2'], ['Tiptoe', '7lBPn6LpIvbvAihTRvBMig'], ["It's Time", '7MXlTgQeo3IVlMpLnZuhxc'], ['Demons', '5qaEfEh1AtSdrdrByCP7qR'],
+      ['On Top of the World', '213x4gsFDm04hSqIUkg88w'], ['Amsterdam', '5gXdinVZqeuDIVxogWzRk0'], ['Hear Me', '2OgOgEBfiZEj2XlIY2XD7f'], ['Every Night', '5raubQ8TVZTJO1PFs2bpwq'],
+      ['Bleeding Out', '1oQjPp1I7cwVE24JivbhzT'], ['Underdog', '25dAGIi1Psxz5kzlNelPLN'], ['Nothing Left to Say / Rocks', '300tML2o8yHO4WrDtG2gxO']] },
+  { id: 'radio-show-everything-under-the-sun', titulo: 'Everything Under The Sun', subtitulo: 'Radio Show Catarse · Nickelback, 2026',
+    categorias: CATEGORIAS('A que eu nego que gosto'),
+    faixas: [['Rattle The Cage', '5hLTrvhZgY1iWbW0cWCrlY'], ['Bones For The Crows', '1OLUxve0ddtop3lCBp4zvN'], ['I Already Know', '2nP86eHtndi7lglaxkrZx9'],
+      ['Leave Me Behind', '5jYvnOuGnaboDzlZ0ux1CI'], ["If I Don't Go", '5XXXFERLsHPaaO4TI4KC8b'], ['Make Me Love You', '4zIKAHdTDvUeE7Tn4KZzOt'],
+      ["Chasin' Famous", '2xTnATySJMz1gL9ACUTnq6'], ['Simple Song', '7mHDFFavGcAyqJljizsj0U'], ['Technicolor Steamboat', '24pu5y5xp1LAP5spLrqMz6'],
+      ['Lift Somebody Up', '5MylX1k41bjy0Y9hSqDuRq'], ['Bottled Dreams', '196LfvytlHg0lTUrZSCYqn'], ['Last Night Was Fun', '2Zjp7vZKSEcbxdaPARI5zo']] }];
 function programa(p) {
   const l = { id: p.id, titulo: p.titulo, subtitulo: p.subtitulo, tamanho: 72, legendas: true, itens: {}, ordem: { fila: [] }, atualizado: Date.now(),
     tiers: p.categorias.map((c, i) => ({ id: p.id + '-c' + i, ...c })) };
-  p.faixas.forEach((f, i) => { const id = p.id + '-f' + (i + 1); l.itens[id] = { texto: f }; l.ordem.fila.push(id); });
+  p.faixas.forEach((f, i) => { const id = p.id + '-f' + (i + 1); l.itens[id] = { texto: f[0], spotify: f[1] }; l.ordem.fila.push(id); });
   return normalizar(l);
 }
 const removidos = () => { try { return JSON.parse(pref('catarse-tier-removidos') || '[]'); } catch (e) { return []; } };
@@ -280,7 +315,7 @@ function linhaEl(t, i) {
   linha.append(rot, zona); return linha;
 }
 function itemEl(id) {
-  const d = lista.itens[id], it = el('div', 'item' + (d.img ? '' : ' texto')); it.dataset.id = id;
+  const d = lista.itens[id], it = el('div', 'item' + (d.img ? '' : ' texto') + (d.spotify ? ' sp' : '')); it.dataset.id = id;
   if (d.img) { const img = new Image(); img.src = d.img; img.alt = d.texto || ''; img.draggable = false; it.append(img); }
   const leg = el('div', 'legenda'); leg.textContent = d.texto || ''; it.append(leg);
   const x = el('button', 'x'); x.textContent = '✕'; x.title = 'Excluir item';
@@ -313,8 +348,51 @@ function adicionarUrl(url) { const id = uid(); lista.itens[id] = { img: url, tex
 function abrirFoco(id) { focoId = id; const d = lista.itens[id], cartao = $('#foco .cartao'), m = $('#foco .midia');
   m.replaceChildren(); cartao.classList.toggle('texto', !d.img);
   if (d.img) { const img = new Image(); img.src = d.img; m.append(img); }
-  $('#foco .leg').textContent = d.texto || ''; $('#foco').classList.add('aberto'); }
-function fecharFoco() { if (!focoId) return; $('#foco').classList.remove('aberto'); focoId = null; document.activeElement.blur?.(); render(); }
+  $('#foco .leg').textContent = d.texto || '';
+  cartao.classList.toggle('com-sp', !!d.spotify);
+  $('#sp-input').value = d.spotify ? 'https://open.spotify.com/track/' + d.spotify : '';
+  if (d.spotify) spTocar(d.spotify); else spParar();
+  $('#foco').classList.add('aberto'); }
+function fecharFoco() { if (!focoId) return; spParar(); $('#foco').classList.remove('aberto'); focoId = null; document.activeElement.blur?.(); render(); }
+
+/* Spotify: player oficial (iFrame API) dentro do destaque. Toca inteiro se o navegador estiver logado no Spotify; sem login, 30 s de prévia. */
+let spApi = null, spCtrl = null, spPend = null, spAtual = null, spQuer = false, spPausado = true;
+window.onSpotifyIframeApiReady = api => { spApi = api; if (spPend) { const id = spPend; spPend = null; spTocar(id); } };
+function spTocar(id) {
+  const uri = 'spotify:track:' + id; spQuer = true;
+  if (!spApi) { spPend = id; return; }
+  if (!spCtrl) {
+    spApi.createController($('#sp-alvo'), { uri, width: '100%', height: 352 }, c => {
+      spCtrl = c; spAtual = id;
+      c.addListener('ready', () => { if (spQuer && focoId) c.play(); });
+      c.addListener('playback_update', e => { spPausado = !!e.data.isPaused; });
+    });
+    return;
+  }
+  if (spAtual !== id) { spCtrl.loadUri(uri); spAtual = id; }
+  spCtrl.play();
+  setTimeout(() => { if (spQuer && focoId && spPausado && spCtrl) spCtrl.play(); }, 1200);
+}
+function spParar() { spQuer = false; spPend = null; if (spCtrl) spCtrl.pause(); }
+const spId = t => { const m = String(t || '').match(/(?:track[\/:]|^\s*)([A-Za-z0-9]{22})(?![A-Za-z0-9])/); return m ? m[1] : null; };
+const spIds = t => [...new Set([...String(t || '').matchAll(/track[\/:]([A-Za-z0-9]{22})/g)].map(m => m[1]))];
+async function spInfo(id) { try { const r = await fetch('https://open.spotify.com/oembed?url=https://open.spotify.com/track/' + id);
+  if (!r.ok) return null; const j = await r.json(); return { titulo: j.title || '', capa: j.thumbnail_url || '' }; } catch (e) { return null; } }
+async function adicionarSpotify(texto) {
+  const ids = spIds(texto); if (!ids.length) { aviso('Não achei link de música do Spotify aí.'); return; }
+  aviso('Buscando ' + ids.length + (ids.length > 1 ? ' músicas no Spotify…' : ' música no Spotify…'));
+  for (const sp of ids) { const info = await spInfo(sp), id = uid();
+    lista.itens[id] = { spotify: sp, img: info?.capa || undefined, texto: info?.titulo || '' }; lista.ordem.fila.push(id); }
+  render(); salvar(); aviso(ids.length + (ids.length > 1 ? ' músicas adicionadas' : ' música adicionada'));
+}
+$('#sp-input').addEventListener('change', async e => { if (!focoId) return; const d = lista.itens[focoId], id = spId(e.target.value);
+  if (!id && e.target.value.trim()) { aviso('Esse não parece um link de música do Spotify.'); return; }
+  if (id) { d.spotify = id; if (!d.texto) { const info = await spInfo(id); if (info?.titulo) d.texto = info.titulo; } } else delete d.spotify;
+  salvar(); abrirFoco(focoId); });
+$('#sp-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+$('#b-spotify').addEventListener('click', () => { $('#painel-sp').classList.toggle('aberto'); if ($('#painel-sp').classList.contains('aberto')) $('#sp-links').focus(); });
+$('#b-sp-fechar').addEventListener('click', () => $('#painel-sp').classList.remove('aberto'));
+$('#b-sp-add').addEventListener('click', async () => { const t = $('#sp-links').value; $('#painel-sp').classList.remove('aberto'); $('#sp-links').value = ''; await adicionarSpotify(t); });
 $('#foco .leg').addEventListener('input', e => { if (focoId) { lista.itens[focoId].texto = e.target.textContent.trim(); salvar(); } });
 $('#foco').addEventListener('pointerdown', e => { if (e.target.id === 'foco') fecharFoco(); });
 $('#b-foco-fechar').addEventListener('click', fecharFoco);
@@ -414,6 +492,7 @@ document.addEventListener('fullscreenchange', () => { if (!document.fullscreenEl
 addEventListener('keydown', e => {
   if (e.key === 'Escape' && focoId) { fecharFoco(); return; }
   const editando = e.target.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName);
+  if (!editando && e.key === ' ' && focoId && spCtrl && lista.itens[focoId]?.spotify) { e.preventDefault(); spCtrl.togglePlay(); return; }
   if (!editando && (e.key === 'g' || e.key === 'G')) { e.preventDefault(); gravacao(!document.body.classList.contains('gravando')); }
 });
 function ajustar() { const grav = document.body.classList.contains('gravando'), topo = grav ? 0 : $('#barra').offsetHeight;
@@ -424,6 +503,8 @@ addEventListener('resize', ajustar);
 /* colar e soltar arquivos */
 document.addEventListener('paste', e => {
   if (e.target.isContentEditable) { e.preventDefault(); document.execCommand('insertText', false, e.clipboardData.getData('text/plain')); return; }
+  if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+  const txt = e.clipboardData.getData('text/plain'); if (spIds(txt).length) { e.preventDefault(); adicionarSpotify(txt); return; }
   const fs = [...e.clipboardData.files]; if (fs.length) { e.preventDefault(); adicionarArquivos(fs); } });
 addEventListener('dragover', e => { const t = [...e.dataTransfer.types]; if (t.includes('Files') || t.includes('text/uri-list') || t.includes('text/html')) { e.preventDefault(); document.body.classList.add('soltando'); } });
 addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('soltando'); });
@@ -438,6 +519,10 @@ addEventListener('drop', e => { e.preventDefault(); document.body.classList.remo
   try { db = await abrirDB(); listas = await req(loja('readonly').getAll()); }
   catch (e) { db = null; listas = []; aviso('Este navegador não deixou salvar. Use Exportar para guardar a lista.'); }
   listas = listas.map(normalizar);
+  const chave = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  for (const p of PROGRAMAS) { const l = listas.find(x => x.id === p.id); if (!l) continue; let mudou = false;
+    for (const it of Object.values(l.itens)) if (!it.spotify) { const f = p.faixas.find(f => chave(f[0]) === chave(it.texto)); if (f) { it.spotify = f[1]; mudou = true; } }
+    if (mudou && db) { try { await req(loja('readwrite').put(l)); } catch (e) {} } }
   const fora = removidos();
   for (const p of PROGRAMAS) if (!listas.some(l => l.id === p.id) && !fora.includes(p.id)) { const l = programa(p); listas.push(l);
     if (db) { try { await req(loja('readwrite').put(l)); } catch (e) {} } }
