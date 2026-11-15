@@ -7,6 +7,7 @@
 <meta name="googlebot" content="noindex, nofollow">
 <title>Tier List Catarse</title>
 <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+<script src="curiosidades.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Libre+Baskerville:ital@0;1&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
@@ -140,6 +141,27 @@ body.gravando .cartao .sp-link{display:none}
 #painel-sp .linha-b{display:flex;gap:8px;justify-content:flex-end}
 #painel-sp button{background:transparent;color:var(--tinta);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;cursor:pointer}
 #painel-sp button.forte{background:var(--acento);border-color:var(--acento);color:#fff;font-weight:700}
+
+/* curiosidades: números 1 a 5 no destaque, texto revelado ao clicar; botão do álbum no cabeçalho */
+#b-curio-album{flex:none;font:700 14px/1 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--acento-texto);background:transparent;
+  border:1px solid var(--linha);border-radius:999px;padding:12px 20px;cursor:pointer;margin-right:28px}
+#b-curio-album:hover{border-color:var(--acento-texto)}
+#b-curio-album[hidden]{display:none}
+.cartao .curio{display:none;flex-direction:column;align-items:center;gap:22px;max-width:1300px}
+.cartao.com-curio .curio{display:flex}
+.curio-nums{display:flex;gap:16px}
+.curio-nums button{width:72px;height:72px;border-radius:50%;border:2px solid var(--acento-texto);background:transparent;color:var(--tinta);
+  font:900 32px/1 var(--f-titulo);cursor:pointer;transition:transform .15s,background .15s,opacity .15s}
+.curio-nums button:hover{transform:scale(1.08)}
+.curio-nums button.vista{opacity:.38;border-color:var(--linha)}
+.curio-nums button.ativa{background:var(--acento);border-color:var(--acento);color:#fff;opacity:1}
+.curio-texto{display:none;text-align:center;font:italic 400 34px/1.35 var(--f-corpo);outline:none;max-width:1200px;padding:0 20px}
+.curio-texto.ver{display:block}
+.curio-fonte{display:none;font:400 12px var(--f-ui);color:var(--mute);max-width:900px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.curio-fonte.ver{display:block}
+body.gravando .curio-fonte{display:none}
+.cartao.album .midia,.cartao.album .sp-link,.cartao.album #b-foco-excluir{display:none}
+.cartao.album .leg{font-size:72px}
 </style>
 </head>
 <body>
@@ -184,6 +206,7 @@ body.gravando .cartao .sp-link{display:none}
       <div id="titulo" contenteditable="true" spellcheck="false"></div>
       <div id="subtitulo" contenteditable="true" spellcheck="false"></div>
     </div>
+    <button id="b-curio-album" hidden>5 curiosidades do álbum</button>
     <div class="site">revistacatarse.com.br</div>
   </header>
   <main id="tiers"></main>
@@ -197,6 +220,7 @@ body.gravando .cartao .sp-link{display:none}
       <div class="leg" contenteditable="true" spellcheck="false"></div>
       <div class="player"><div id="sp-alvo"></div></div>
       <label class="sp-link">Spotify <input id="sp-input" placeholder="Cole o link da música (open.spotify.com/track/…)" spellcheck="false"></label>
+      <div class="curio"><div class="curio-nums"></div><div class="curio-texto" contenteditable="true" spellcheck="false"></div><div class="curio-fonte"></div></div>
       <div class="acoes"><button id="b-foco-excluir">Excluir item</button><button id="b-foco-fechar">Fechar (Esc)</button></div>
     </div>
   </div>
@@ -242,7 +266,19 @@ function programa(p) {
   const l = { id: p.id, titulo: p.titulo, subtitulo: p.subtitulo, tamanho: 72, legendas: true, itens: {}, ordem: { fila: [] }, atualizado: Date.now(),
     tiers: p.categorias.map((c, i) => ({ id: p.id + '-c' + i, ...c })) };
   p.faixas.forEach((f, i) => { const id = p.id + '-f' + (i + 1); l.itens[id] = { texto: f[0], spotify: f[1] }; l.ordem.fila.push(id); });
+  aplicarCuriosidades(l);
   return normalizar(l);
+}
+/* curiosidades vêm de curiosidades.js (por id de programa e título da faixa); o que foi editado na página não é sobrescrito */
+const chaveTitulo = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const curioLista = arr => (arr || []).slice(0, 5).map(c => ({ t: String(c.texto || c.t || '').trim(), f: c.fonte || c.f || '' })).filter(c => c.t);
+function aplicarCuriosidades(l) {
+  const c = window.CURIOSIDADES && window.CURIOSIDADES[l.id]; if (!c) return false; let mudou = false;
+  if (!l.curiosidadesEditadas && c.album) { l.curiosidades = curioLista(c.album); mudou = true; }
+  const faixas = c.faixas || {};
+  for (const it of Object.values(l.itens)) { if (it.curiosidadesEditadas) continue;
+    const k = Object.keys(faixas).find(t => chaveTitulo(t) === chaveTitulo(it.texto)); if (k) { it.curiosidades = curioLista(faixas[k]); mudou = true; } }
+  return mudou;
 }
 const removidos = () => { try { return JSON.parse(pref('catarse-tier-removidos') || '[]'); } catch (e) { return []; } };
 
@@ -291,6 +327,7 @@ function render() {
   if (document.activeElement !== $('#subtitulo')) $('#subtitulo').textContent = lista.subtitulo;
   tiersEl.replaceChildren(...lista.tiers.map(linhaEl));
   filaEl.replaceChildren(...lista.ordem.fila.map(itemEl));
+  $('#b-curio-album').hidden = !(lista.curiosidades && lista.curiosidades.length);
   marcarLimites();
 }
 function linhaEl(t, i) {
@@ -345,13 +382,37 @@ async function adicionarArquivos(files) { let n = 0;
 function adicionarUrl(url) { const id = uid(); lista.itens[id] = { img: url, texto: '' }; lista.ordem.fila.push(id); render(); salvar(); aviso('Imagem adicionada pelo link'); }
 
 /* destaque (clique num item) */
-function abrirFoco(id) { focoId = id; const d = lista.itens[id], cartao = $('#foco .cartao'), m = $('#foco .midia');
-  m.replaceChildren(); cartao.classList.toggle('texto', !d.img);
+const ALBUM = '__album';
+const dadosFoco = id => id === ALBUM ? { texto: lista.titulo, curiosidades: lista.curiosidades || [], album: true } : lista.itens[id];
+const reveladas = new Set(); let curioAtual = -1;
+function renderCurio(d) {
+  const lst = d.curiosidades || [], cartao = $('#foco .cartao'), nums = $('#foco .curio-nums'), txt = $('#foco .curio-texto'), fonte = $('#foco .curio-fonte');
+  cartao.classList.toggle('com-curio', lst.length > 0);
+  nums.replaceChildren(...lst.map((c, i) => { const b = el('button'); b.textContent = i + 1;
+    if (reveladas.has(focoId + ':' + i)) b.classList.add('vista'); if (i === curioAtual) b.classList.add('ativa');
+    b.addEventListener('pointerdown', e => e.stopPropagation()); b.addEventListener('click', e => { e.stopPropagation(); revelar(i); }); return b; }));
+  const c = lst[curioAtual];
+  txt.classList.toggle('ver', !!c); fonte.classList.toggle('ver', !!(c && c.f));
+  if (c) { txt.textContent = c.t; fonte.textContent = c.f || ''; } else { txt.textContent = ''; fonte.textContent = ''; }
+  txt.contentEditable = document.body.classList.contains('gravando') ? 'false' : 'true';
+}
+function revelar(i) { if (!focoId) return; const d = dadosFoco(focoId); if (!d.curiosidades || !d.curiosidades[i]) return;
+  curioAtual = curioAtual === i ? -1 : i; if (curioAtual >= 0) reveladas.add(focoId + ':' + i); renderCurio(d); }
+$('#foco .curio-texto').addEventListener('input', e => { if (!focoId || curioAtual < 0) return; const d = dadosFoco(focoId);
+  d.curiosidades[curioAtual].t = e.target.textContent.trim();
+  if (focoId === ALBUM) { lista.curiosidades = d.curiosidades; lista.curiosidadesEditadas = true; } else d.curiosidadesEditadas = true; salvar(); });
+$('#foco .curio-texto').addEventListener('pointerdown', e => e.stopPropagation());
+$('#b-curio-album').addEventListener('pointerdown', e => e.stopPropagation());
+$('#b-curio-album').addEventListener('click', e => { e.stopPropagation(); abrirFoco(ALBUM); });
+function abrirFoco(id) { focoId = id; curioAtual = -1; const d = dadosFoco(id), cartao = $('#foco .cartao'), m = $('#foco .midia');
+  m.replaceChildren(); cartao.classList.toggle('texto', !d.img); cartao.classList.toggle('album', !!d.album);
+  $('#foco .leg').contentEditable = d.album ? 'false' : 'true';
+  renderCurio(d);
   if (d.img) { const img = new Image(); img.src = d.img; m.append(img); }
   $('#foco .leg').textContent = d.texto || '';
   cartao.classList.toggle('com-sp', !!d.spotify);
   $('#sp-input').value = d.spotify ? 'https://open.spotify.com/track/' + d.spotify : '';
-  if (d.spotify) spTocar(d.spotify); else spParar();
+  if (d.spotify && !d.album) spTocar(d.spotify); else spParar();
   $('#foco').classList.add('aberto'); }
 function fecharFoco() { if (!focoId) return; spParar(); $('#foco').classList.remove('aberto'); focoId = null; document.activeElement.blur?.(); render(); }
 
@@ -393,10 +454,10 @@ $('#sp-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.pre
 $('#b-spotify').addEventListener('click', () => { $('#painel-sp').classList.toggle('aberto'); if ($('#painel-sp').classList.contains('aberto')) $('#sp-links').focus(); });
 $('#b-sp-fechar').addEventListener('click', () => $('#painel-sp').classList.remove('aberto'));
 $('#b-sp-add').addEventListener('click', async () => { const t = $('#sp-links').value; $('#painel-sp').classList.remove('aberto'); $('#sp-links').value = ''; await adicionarSpotify(t); });
-$('#foco .leg').addEventListener('input', e => { if (focoId) { lista.itens[focoId].texto = e.target.textContent.trim(); salvar(); } });
+$('#foco .leg').addEventListener('input', e => { if (focoId && focoId !== ALBUM) { lista.itens[focoId].texto = e.target.textContent.trim(); salvar(); } });
 $('#foco').addEventListener('pointerdown', e => { if (e.target.id === 'foco') fecharFoco(); });
 $('#b-foco-fechar').addEventListener('click', fecharFoco);
-$('#b-foco-excluir').addEventListener('click', () => { const id = focoId; fecharFoco(); excluirItem(id); });
+$('#b-foco-excluir').addEventListener('click', () => { const id = focoId; if (id === ALBUM) return; fecharFoco(); excluirItem(id); });
 
 /* arrastar com animação */
 function flip(fn) { const els = [...palco.querySelectorAll('.zona .item:not(.arrastando)')];
@@ -492,7 +553,8 @@ document.addEventListener('fullscreenchange', () => { if (!document.fullscreenEl
 addEventListener('keydown', e => {
   if (e.key === 'Escape' && focoId) { fecharFoco(); return; }
   const editando = e.target.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName);
-  if (!editando && e.key === ' ' && focoId && spCtrl && lista.itens[focoId]?.spotify) { e.preventDefault(); spCtrl.togglePlay(); return; }
+  if (!editando && e.key === ' ' && focoId && focoId !== ALBUM && spCtrl && lista.itens[focoId]?.spotify) { e.preventDefault(); spCtrl.togglePlay(); return; }
+  if (!editando && focoId && /^[1-5]$/.test(e.key)) { e.preventDefault(); revelar(+e.key - 1); return; }
   if (!editando && (e.key === 'g' || e.key === 'G')) { e.preventDefault(); gravacao(!document.body.classList.contains('gravando')); }
 });
 function ajustar() { const grav = document.body.classList.contains('gravando'), topo = grav ? 0 : $('#barra').offsetHeight;
@@ -523,6 +585,7 @@ addEventListener('drop', e => { e.preventDefault(); document.body.classList.remo
   for (const p of PROGRAMAS) { const l = listas.find(x => x.id === p.id); if (!l) continue; let mudou = false;
     for (const it of Object.values(l.itens)) if (!it.spotify) { const f = p.faixas.find(f => chave(f[0]) === chave(it.texto)); if (f) { it.spotify = f[1]; mudou = true; } }
     if (mudou && db) { try { await req(loja('readwrite').put(l)); } catch (e) {} } }
+  for (const l of listas) if (aplicarCuriosidades(l) && db) { try { await req(loja('readwrite').put(l)); } catch (e) {} }
   const fora = removidos();
   for (const p of PROGRAMAS) if (!listas.some(l => l.id === p.id) && !fora.includes(p.id)) { const l = programa(p); listas.push(l);
     if (db) { try { await req(loja('readwrite').put(l)); } catch (e) {} } }
